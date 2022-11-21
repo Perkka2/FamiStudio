@@ -878,6 +878,11 @@ famistudio_r2:   .res 1
 
 famistudio_ptr0: .res 2
 famistudio_ptr1: .res 2
+.if FAMISTUDIO_EXP_EPSM
+epsm_safe_write_byte: .res 1
+.assert epsm_safe_write_byte <= $FF, error, "epsm_safe_write_byte is too large."
+.endif
+
 
 famistudio_ptr0_lo = famistudio_ptr0+0
 famistudio_ptr0_hi = famistudio_ptr0+1
@@ -2273,7 +2278,79 @@ famistudio_epsm_square_vol_table:
     .byte FAMISTUDIO_EPSM_REG_VOL_A, FAMISTUDIO_EPSM_REG_VOL_B, FAMISTUDIO_EPSM_REG_VOL_C
 famistudio_epsm_square_env_table:
     .byte FAMISTUDIO_EPSM_CH0_ENVS, FAMISTUDIO_EPSM_CH1_ENVS, FAMISTUDIO_EPSM_CH2_ENVS
-    
+.macro write_epsm_value op1, op2, op3
+  BRK
+  STA $4016
+  .byte op1, op2, op3
+  RTS
+.endmacro
+EpsmWriteHandlers:
+write_epsm_value $01, epsm_safe_write_byte-1, $60  ; ORA (epsm_safe_write_byte-1,X)
+write_epsm_value $05, epsm_safe_write_byte,   $60  ; ORA <epsm_safe_write_byte
+write_epsm_value $0A, $60,                    $60  ; ASL
+write_epsm_value $0D, epsm_safe_write_byte,   $00  ; ORA <>epsm_safe_write_byte
+write_epsm_value $10, $00,                    $60  ; BPL #$00
+write_epsm_value $15, epsm_safe_write_byte,   $60  ; ORA <epsm_safe_write_byte,X
+write_epsm_value $18, $60,                    $60  ; CLC
+write_epsm_value $1D, epsm_safe_write_byte,   $00  ; ORA <>epsm_safe_write_byte,X
+write_epsm_value $21, epsm_safe_write_byte-1, $60  ; AND (epsm_safe_write_byte-1,X)
+write_epsm_value $25, epsm_safe_write_byte,   $60  ; AND <epsm_safe_write_byte
+write_epsm_value $2A, $60,                    $60  ; ROL
+write_epsm_value $2D, epsm_safe_write_byte,   $00  ; AND <>epsm_safe_write_byte
+write_epsm_value $30, $00,                    $60  ; BMI #$00
+write_epsm_value $35, epsm_safe_write_byte,   $60  ; AND <epsm_safe_write_byte,X
+write_epsm_value $38, $60,                    $60  ; SEC
+write_epsm_value $3D, epsm_safe_write_byte,   $00  ; AND <>epsm_safe_write_byte,X
+write_epsm_value $41, epsm_safe_write_byte-1, $60  ; EOR (epsm_safe_write_byte-1,X)
+write_epsm_value $45, epsm_safe_write_byte,   $60  ; EOR <epsm_safe_write_byte
+write_epsm_value $4A, $60,                    $60  ; LSR
+write_epsm_value $4D, epsm_safe_write_byte,   $00  ; EOR <>epsm_safe_write_byte
+write_epsm_value $50, $00,                    $60  ; BVC #$00
+write_epsm_value $55, epsm_safe_write_byte,   $60  ; EOR <epsm_safe_write_byte,X
+write_epsm_value $59, $00,                    $00  ; EOR $0000,Y
+write_epsm_value $5D, epsm_safe_write_byte,   $00  ; EOR <>epsm_safe_write_byte,X
+write_epsm_value $61, epsm_safe_write_byte-1, $60  ; ADC (epsm_safe_write_byte-1,X)
+write_epsm_value $65, epsm_safe_write_byte,   $60  ; ADC <epsm_safe_write_byte
+write_epsm_value $6A, $60,                    $60  ; ROR
+write_epsm_value $6D, epsm_safe_write_byte,   $00  ; ADC <>epsm_safe_write_byte
+write_epsm_value $70, $00,                    $60  ; BVS #$00
+write_epsm_value $75, epsm_safe_write_byte,   $60  ; ADC <epsm_safe_write_byte,X
+write_epsm_value $79, $00,                    $00  ; ADC $0000,Y
+write_epsm_value $7D, epsm_safe_write_byte,   $00  ; ADC <>epsm_safe_write_byte,X
+write_epsm_value $80, $00,                    $60  ; NOP #$00 (illegal)
+write_epsm_value $86, epsm_safe_write_byte,   $60  ; STX <epsm_safe_write_byte
+write_epsm_value $8A, $60,                    $60  ; TXA
+write_epsm_value $8E, epsm_safe_write_byte,   $00  ; STX <>epsm_safe_write_byte
+write_epsm_value $90, $00,                    $60  ; BCC #$00
+write_epsm_value $95, epsm_safe_write_byte,   $60  ; STA <epsm_safe_write_byte,X
+write_epsm_value $98, $60,                    $60  ; TYA
+write_epsm_value $9D, epsm_safe_write_byte,   $00  ; STA <>epsm_safe_write_byte,X
+write_epsm_value $A2, $00,                    $60  ; LDX #$00
+write_epsm_value $A5, epsm_safe_write_byte,   $60  ; LDA <epsm_safe_write_byte
+write_epsm_value $A9, $00,                    $60  ; LDA #$00
+write_epsm_value $AD, epsm_safe_write_byte,   $00  ; LDA <>epsm_safe_write_byte
+write_epsm_value $B0, $00,                    $60  ; BCS #$00
+write_epsm_value $B5, epsm_safe_write_byte,   $60  ; LDA <epsm_safe_write_byte,X
+write_epsm_value $18, $60,                    $60  ; CLV
+write_epsm_value $BD, epsm_safe_write_byte,   $00  ; LDA <>epsm_safe_write_byte,X
+write_epsm_value $C0, $00,                    $60  ; CPY #$00
+write_epsm_value $C5, epsm_safe_write_byte,   $60  ; CMP <epsm_safe_write_byte
+write_epsm_value $C9, $00,                    $60  ; CMP #$00
+write_epsm_value $CD, epsm_safe_write_byte,   $00  ; CMP <>epsm_safe_write_byte
+write_epsm_value $D0, $00,                    $60  ; BNE #$00
+write_epsm_value $D5, epsm_safe_write_byte,   $60  ; CMP <epsm_safe_write_byte,X
+write_epsm_value $D9, $00,                    $00  ; CMP $0000,Y
+write_epsm_value $DD, epsm_safe_write_byte,   $00  ; CMP <>epsm_safe_write_byte,X
+write_epsm_value $E0, $00,                    $60  ; CPX #$00
+write_epsm_value $E4, epsm_safe_write_byte,   $60  ; CPX <epsm_safe_write_byte
+write_epsm_value $EA, $60,                    $60  ; NOP
+write_epsm_value $EC, epsm_safe_write_byte,   $00  ; CPX <>epsm_safe_write_byte
+write_epsm_value $F0, $00,                    $60  ; BEQ #$00
+write_epsm_value $F5, epsm_safe_write_byte,   $60  ; SBC <epsm_safe_write_byte,X
+write_epsm_value $F9, $00,                    $00  ; SBC $0000,Y
+write_epsm_value $FD, epsm_safe_write_byte,   $00  ; SBC <>epsm_safe_write_byte,X
+
+
 ;======================================================================================================================
 ; FAMISTUDIO_UPDATE_EPSM_SQUARE_CHANNEL_SOUND (internal)
 ;
@@ -2354,7 +2431,7 @@ famistudio_update_epsm_fm_channel_sound:
     @vol_offset = famistudio_r0
 
     lda #0
-    sta famistudio_chn_inst_changed,y
+    sta famistudio_chn_inst_changed+3,y
 
     ; If the writes are done to channels 0-2, use FAMISTUDIO_EPSM_REG_SEL0 if 3-5 use FAMISTUDIO_EPSM_REG_SEL1
     ; This reg_offset stores the difference so we can later load it into x and do sta FAMISTUDIO_EPSM_REG_SEL0, x
@@ -2650,12 +2727,48 @@ famistudio_update_epsm_rhythm_channel_sound:
 
     lda #$10 ;FAMISTUDIO_EPSM_REG_RHY_KY
     sta famistudio_chn_epsm_rhythm_key,y
-    sta FAMISTUDIO_EPSM_ADDR
+	PHA
+	AND #$F0
+	ORA #$2
+	jsr WriteToEpsm
+	PLA
+	ROL
+	ROL
+	ROL
+	ROL
+	AND #$F0
+	jsr WriteToEpsm
+    ;sta FAMISTUDIO_EPSM_ADDR
     lda famistudio_epsm_rhythm_key_table,y
-    sta FAMISTUDIO_EPSM_DATA
+	PHA
+	AND #$F0
+	ORA #$6
+	jsr WriteToEpsm
+	PLA
+	ROL
+	ROL
+	ROL
+	ROL
+	AND #$F0
+	jsr WriteToEpsm
+    ;sta FAMISTUDIO_EPSM_DATA
 
 @noupdate:
     rts
+
+WriteToEpsm:
+  TAX
+  AND #$FC
+  ASL
+  PHA
+  LDA #>EpsmWriteHandlers
+  ADC #$00
+  PHA
+
+  TXA
+  LDX #$00
+  STX epsm_safe_write_byte
+  RTS
 
 .endif
 
@@ -3665,12 +3778,15 @@ famistudio_set_instrument:
     ldx @chan_idx
 .if FAMISTUDIO_USE_VIBRATO 
     lda famistudio_chn_env_override,x ; Instrument pitch is overriden by vibrato, dont touch!
-    bmi @reset_pitch_env    
+    bmi @no_pitch    
 .endif    
     lda famistudio_channel_to_pitch_env, x
     bmi @no_pitch
     tax
+    lda #1
+    sta famistudio_pitch_env_ptr,x     ; Reset pitch envelope pointert to 1 (pitch envelope have relative/absolute flag in the first byte)
     lda #0
+    sta famistudio_pitch_env_repeat,x
     sta famistudio_pitch_env_value_lo,x
     sta famistudio_pitch_env_value_hi,x
     iny
@@ -3679,11 +3795,6 @@ famistudio_set_instrument:
     iny
     lda (@intrument_ptr),y
     sta famistudio_pitch_env_addr_hi,x
-    @reset_pitch_env:
-    lda #0
-    sta famistudio_pitch_env_repeat,x
-    lda #1
-    sta famistudio_pitch_env_ptr,x     ; Reset pitch envelope pointert to 1 (pitch envelope have relative/absolute flag in the first byte) 
     @no_pitch:
     ldx @chan_idx
     rts
