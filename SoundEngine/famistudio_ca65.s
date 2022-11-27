@@ -2299,7 +2299,7 @@ famistudio_epsm_square_env_table:
 famistudio_update_epsm_square_channel_sound:
     
     @pitch = famistudio_ptr1
-	@volume = famistudio_r2
+	@volume = famistudio_r0
 
     lda famistudio_chn_note+FAMISTUDIO_EPSM_CH0_IDX,y
     bne @nocut
@@ -2649,6 +2649,7 @@ famistudio_update_epsm_fm_channel_sound:
 famistudio_update_epsm_rhythm_channel_sound:
     
     @pitch = famistudio_ptr1
+	@volume = famistudio_r0
 
     lda famistudio_chn_note+FAMISTUDIO_EPSM_CH9_IDX,y
     ;bne @note
@@ -2681,13 +2682,14 @@ famistudio_update_epsm_rhythm_channel_sound:
     .else
         lda famistudio_env_value+FAMISTUDIO_ENV_VOLUME_OFF,x
     .endif
-    tax
+    sta @volume
 
 @update_volume:
     ; Write volume
     lda famistudio_epsm_rhythm_reg_table,y
 	jsr PrepareEpsmAddr0
     ;sta FAMISTUDIO_EPSM_ADDR
+	ldx @volume
     .if FAMISTUDIO_USE_VOLUME_TRACK    
         lda famistudio_volume_table,x 
     .else
