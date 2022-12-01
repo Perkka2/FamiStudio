@@ -2304,6 +2304,7 @@ famistudio_update_epsm_square_channel_sound:
     lda famistudio_chn_note+FAMISTUDIO_EPSM_CH0_IDX,y
     bne @nocut
     ldx #0 ; This will fetch volume 0.
+    stx @volume
     beq @update_volume
 
 @nocut:
@@ -2319,8 +2320,8 @@ famistudio_update_epsm_square_channel_sound:
 
     ; Write pitch
     lda famistudio_epsm_sqr_reg_table_lo,y
-	jsr PrepareEpsmAddr0
     ;sta FAMISTUDIO_EPSM_ADDR
+	jsr PrepareEpsmAddr0
     lda @pitch+0
     ;sta FAMISTUDIO_EPSM_DATA
 	jsr PrepareEpsmData0
@@ -2330,7 +2331,6 @@ famistudio_update_epsm_square_channel_sound:
     lda @pitch+1
     ;sta FAMISTUDIO_EPSM_DATA
 	jsr PrepareEpsmData0
-
     ; Read/multiply volume
     ldx famistudio_epsm_square_env_table,y
     .if FAMISTUDIO_USE_VOLUME_TRACK
@@ -2344,6 +2344,7 @@ famistudio_update_epsm_square_channel_sound:
         lda famistudio_env_value+FAMISTUDIO_ENV_VOLUME_OFF,x
     .endif
     sta @volume
+	;tax
 
 @update_volume:
     ; Write volume
@@ -2570,6 +2571,7 @@ famistudio_update_epsm_fm_channel_sound:
         ;sta FAMISTUDIO_EPSM_REG_SEL0,x
         ldx @vol_offset
         lda famistudio_chn_epsm_vol_op1,y
+		clc
         adc famistudio_epsm_fm_vol_table,x
         cmp #127
         bmi @save_op1
@@ -2585,6 +2587,7 @@ famistudio_update_epsm_fm_channel_sound:
         ;sta FAMISTUDIO_EPSM_REG_SEL0,x
         ldx @vol_offset
         lda famistudio_chn_epsm_vol_op3,y
+		clc
         adc famistudio_epsm_fm_vol_table,x
         cmp #127
         bmi @save_op3
@@ -2600,6 +2603,7 @@ famistudio_update_epsm_fm_channel_sound:
         ;sta FAMISTUDIO_EPSM_REG_SEL0,x
         ldx @vol_offset
         lda famistudio_chn_epsm_vol_op2,y
+		clc
         adc famistudio_epsm_fm_vol_table,x
         cmp #127
         bmi @save_op2
@@ -2616,6 +2620,7 @@ famistudio_update_epsm_fm_channel_sound:
         ;sta FAMISTUDIO_EPSM_REG_SEL0,x
         ldx @vol_offset
         lda famistudio_chn_epsm_vol_op4,y
+		clc
         adc famistudio_epsm_fm_vol_table,x
         cmp #127
         bmi @save_op4
@@ -2656,6 +2661,7 @@ famistudio_update_epsm_rhythm_channel_sound:
     bne @nocut
     sta famistudio_chn_epsm_rhythm_key,y
     ldx #0 ; This will fetch volume 0.
+	stx @volume
     beq @noupdate
 @nocut:
     ; Read note, apply arpeggio 
@@ -2682,6 +2688,7 @@ famistudio_update_epsm_rhythm_channel_sound:
     .else
         lda famistudio_env_value+FAMISTUDIO_ENV_VOLUME_OFF,x
     .endif
+	;tax
     sta @volume
 
 @update_volume:
@@ -2689,12 +2696,14 @@ famistudio_update_epsm_rhythm_channel_sound:
     lda famistudio_epsm_rhythm_reg_table,y
 	jsr PrepareEpsmAddr0
     ;sta FAMISTUDIO_EPSM_ADDR
-	ldx @volume
     .if FAMISTUDIO_USE_VOLUME_TRACK    
+		ldx @volume
         lda famistudio_volume_table,x 
     .else
-        txa
+		lda @volume
+        ;txa
     .endif
+		clc
         rol
         adc famistudio_chn_epsm_rhythm_stereo,y
 		jsr PrepareEpsmData0
@@ -3931,17 +3940,21 @@ famistudio_set_vrc7_instrument:
     .local @loop_extra_patch
 
     ldx #0
+	stx @temp_x
     @loop_main_patch:
+		ldx @temp_x
         lda famistudio_epsm_register_order,x
         clc
         adc @reg_offset
-		;jsr select
-        sta select
+		jsr select
+        ;sta select
         lda (@ptr),y
-		;jsr write
-        sta write
+		jsr write
+        ;sta write
+		ldx @temp_x
         iny
         inx
+		stx @temp_x
         ; we have 8 bytes in the instrument_exp instead of padding. The rest is in ex_patch
         cpx #8
         bne @loop_main_patch
@@ -3951,13 +3964,15 @@ famistudio_set_vrc7_instrument:
         lda famistudio_epsm_register_order,x
         clc
         adc @reg_offset
-		;jsr select
-        sta select
+		jsr select
+        ;sta select
         lda (@ex_patch),y
-		;jsr write
-        sta write
+		jsr write
+        ;sta write
+		ldx @temp_x
         iny
         inx
+		stx @temp_x
         cpx #30
         bne @loop_extra_patch
 .endmacro
@@ -3978,6 +3993,7 @@ famistudio_set_epsm_instrument:
     @ex_patch   = famistudio_ptr1
     @reg_offset = famistudio_r0
     @chan_idx   = famistudio_r1
+	@temp_x     = famistudio_r2
 
     famistudio_set_exp_instrument
 
@@ -4025,14 +4041,17 @@ famistudio_set_epsm_instrument:
     tax
     lda famistudio_channel_epsm_chan_table,x
     sta @reg_offset
+	stx @temp_x
     
         lda #FAMISTUDIO_EPSM_REG_KEY
-		;jsr PrepareEpsmAddr0
-        sta FAMISTUDIO_EPSM_REG_SEL0
+		jsr PrepareEpsmAddr0
+        ;sta FAMISTUDIO_EPSM_REG_SEL0
+		ldx @temp_x
         lda famistudio_epsm_channel_key_table, x
         and #$0f ; remove trigger
-		;jsr PrepareEpsmData0
-        sta FAMISTUDIO_EPSM_REG_WRITE0
+		jsr PrepareEpsmData0
+		ldx @temp_x
+        ;sta FAMISTUDIO_EPSM_REG_WRITE0
     
     ; Now we need to store the algorithm and 1st operator volume for later use
         lda (@ptr),y
@@ -4054,23 +4073,23 @@ famistudio_set_epsm_instrument:
     bpl @reg_set_1
 
     @reg_set_0:
-		famistudio_epsm_write_patch_registers FAMISTUDIO_EPSM_REG_SEL0, FAMISTUDIO_EPSM_REG_WRITE0
-        ;famistudio_epsm_write_patch_registers PrepareEpsmAddr0, PrepareEpsmData0
+		;famistudio_epsm_write_patch_registers FAMISTUDIO_EPSM_REG_SEL0, FAMISTUDIO_EPSM_REG_WRITE0
+        famistudio_epsm_write_patch_registers PrepareEpsmAddr0, PrepareEpsmData0
     jmp @last_reg
 
     @reg_set_1:
-	    famistudio_epsm_write_patch_registers FAMISTUDIO_EPSM_REG_SEL1, FAMISTUDIO_EPSM_REG_WRITE1
-        ;famistudio_epsm_write_patch_registers PrepareEpsmAddr1, PrepareEpsmData1
+	    ;famistudio_epsm_write_patch_registers FAMISTUDIO_EPSM_REG_SEL1, FAMISTUDIO_EPSM_REG_WRITE1
+        famistudio_epsm_write_patch_registers PrepareEpsmAddr1, PrepareEpsmData1
     
     @last_reg:
         lda famistudio_epsm_register_order,x
         clc
         adc @reg_offset
-		;jsr PrepareEpsmAddr0
-        sta FAMISTUDIO_EPSM_REG_SEL0
+		jsr PrepareEpsmAddr0
+        ;sta FAMISTUDIO_EPSM_REG_SEL0
         lda (@ex_patch),y
-		;jsr PrepareEpsmData0
-        sta FAMISTUDIO_EPSM_REG_WRITE0
+		jsr PrepareEpsmData0
+        ;sta FAMISTUDIO_EPSM_REG_WRITE0
         
         lda @chan_idx    
         sbc #(FAMISTUDIO_EPSM_CHAN_FM_START - 1) ; Carry is not set, so - 1.
@@ -5685,7 +5704,7 @@ write_epsm_value $A9, $00,                    $60  ; LDA #$00
 write_epsm_value $AD, epsm_safe_write_byte,   $00  ; LDA <>epsm_safe_write_byte
 write_epsm_value $B0, $00,                    $60  ; BCS #$00
 write_epsm_value $B5, epsm_safe_write_byte,   $60  ; LDA <epsm_safe_write_byte,X
-write_epsm_value $18, $60,                    $60  ; CLV
+write_epsm_value $B8, $60,                    $60  ; CLV
 write_epsm_value $BD, epsm_safe_write_byte,   $00  ; LDA <>epsm_safe_write_byte,X
 write_epsm_value $C0, $00,                    $60  ; CPY #$00
 write_epsm_value $C5, epsm_safe_write_byte,   $60  ; CMP <epsm_safe_write_byte

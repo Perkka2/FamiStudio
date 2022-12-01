@@ -10,6 +10,9 @@ namespace FamiStudio
 {
     static class EpsmUnitTest
     {
+        private static int tempAddr = 0;
+        private static int tempValue = 0;
+        private static int finalValue = 0;
         private static int addr0 = 0;
         private static int addr1 = 0;
         private static byte[] regs0 = new byte[184];
@@ -20,6 +23,28 @@ namespace FamiStudio
         {
             switch (addr)
             {
+                case 0x4016:
+                    if ((data & 0x0E) == 0x02) { tempAddr = 0x0; } //A0 = 0, A1 = 0
+                    if ((data & 0x0E) == 0x0A) { tempAddr = 0x1; } //A0 = 1, A1 = 0
+                    if ((data & 0x0E) == 0x06) { tempAddr = 0x2; } //A0 = 0, A1 = 1
+                    if ((data & 0x0E) == 0x0E) { tempAddr = 0x3; } //A0 = 1, A1 = 1
+                    if ((data & 0x0E) != 0x00) { tempValue = data; }
+                    if ((data & 0x02) == 0x00)
+                    {
+                        finalValue = (tempValue & 0xF0) | (data >> 4);
+                        switch (tempAddr)
+                        {
+                        case 0: addr0 = finalValue;
+                        break;
+                        case 1: regs0[addr0] = (byte)finalValue;
+                        break;
+                        case 2: addr1 = finalValue;
+                        break;
+                        case 3: regs1[addr1] = (byte)finalValue;
+                        break;
+                        }
+                    }
+                    break;
                 case NesApu.EPSM_ADDR0: addr0 = data; break;
                 case NesApu.EPSM_ADDR1: addr1 = data; break;
                 case NesApu.EPSM_DATA0: regs0[addr0] = (byte)data; break;
