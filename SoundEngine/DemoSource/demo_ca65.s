@@ -25,7 +25,7 @@ FAMISTUDIO_DEMO_USE_C = 0
 ; so re-export the necessary ones here
 .exportzp _gamepad_pressed=gamepad_pressed, _p0=p0
 .exportzp sp
-.export _song_title_silver_surfer=song_title_silver_surfer
+.export _song_title_untitled=song_title_untitled
 .export _song_title_jts=song_title_jts
 .export _song_title_shatterhand=song_title_shatterhand
 .export _update_title=update_title
@@ -87,13 +87,17 @@ FAMISTUDIO_CFG_DPCM_SUPPORT   = 1
 FAMISTUDIO_CFG_SFX_SUPPORT    = 1 
 FAMISTUDIO_CFG_SFX_STREAMS    = 2
 FAMISTUDIO_CFG_EQUALIZER      = 1
-FAMISTUDIO_USE_VOLUME_TRACK   = 1
-FAMISTUDIO_USE_PITCH_TRACK    = 1
-FAMISTUDIO_USE_SLIDE_NOTES    = 1
-FAMISTUDIO_USE_VIBRATO        = 1
-FAMISTUDIO_USE_ARPEGGIO       = 1
-FAMISTUDIO_CFG_SMOOTH_VIBRATO = 1
-FAMISTUDIO_USE_RELEASE_NOTES  = 1
+FAMISTUDIO_USE_VOLUME_TRACK      = 1
+FAMISTUDIO_USE_VOLUME_SLIDES     = 1
+FAMISTUDIO_USE_PITCH_TRACK       = 1
+FAMISTUDIO_USE_SLIDE_NOTES       = 1
+FAMISTUDIO_USE_NOISE_SLIDE_NOTES = 1
+FAMISTUDIO_USE_VIBRATO           = 1
+FAMISTUDIO_USE_ARPEGGIO          = 1
+FAMISTUDIO_USE_DUTYCYCLE_EFFECT  = 1
+FAMISTUDIO_USE_DELTA_COUNTER     = 1
+FAMISTUDIO_USE_RELEASE_NOTES     = 1
+FAMISTUDIO_EXP_EPSM				 = 1
 FAMISTUDIO_DPCM_OFF           = $e000
 
 .if FAMISTUDIO_DEMO_USE_C
@@ -116,7 +120,7 @@ default_palette:
 .incbin "demo.pal"
 
 ; Silver Surfer - BGM 2
-song_title_silver_surfer:
+song_title_untitled:
     .byte $ff, $ff, $ff, $12, $22, $25, $2f, $1e, $2b, $ff, $12, $2e, $2b, $1f, $1e, $2b, $ff, $4f, $ff, $01, $06, $0c, $ff, $36, $ff, $ff, $ff, $ff
 
 ; Journey To Silius - Menu
@@ -473,13 +477,13 @@ update_title:
     ; they are actually 3 different song data, with a single song in each.
     ; For a real game, if would be preferable to export all songs together
     ; so that instruments shared across multiple songs are only exported once.
-    @silver_surfer:
-        lda #<song_title_silver_surfer
+    @untitled:
+        lda #<untitled
         sta @text_ptr+0
-        lda #>song_title_silver_surfer
+        lda #>untitled
         sta @text_ptr+1
-        ldx #.lobyte(music_data_silver_surfer_c_stephen_ruddy)
-        ldy #.hibyte(music_data_silver_surfer_c_stephen_ruddy)
+        ldx #.lobyte(music_data_untitled)
+        ldy #.hibyte(music_data_untitled)
         jmp @play_song
 
     @journey_to_silius:
@@ -709,7 +713,13 @@ main:
         jsr famistudio_sfx_play
         beq @draw
 @draw:
+
+lda #$1f
+sta $2001
     jsr famistudio_update ; TODO: Call in NMI.
+
+lda #$1e
+sta $2001
 .endif
  
     lda nmt_update_mode
@@ -889,8 +899,8 @@ setup_background:
     rts
 
 .segment "SONG1"
-song_silver_surfer:
-.include "song_silver_surfer_ca65.s"
+untitled:
+.include "nsf.s"
 
 sfx_data:
 .include "sfx_ca65.s"
@@ -904,7 +914,7 @@ song_shatterhand:
 .include "song_shatterhand_ca65.s"
 
 .segment "DPCM"
-.incbin "song_journey_to_silius_ca65.dmc"
+.incbin "nsf.dmc"
 
 .segment "VECTORS"
 .word nmi
