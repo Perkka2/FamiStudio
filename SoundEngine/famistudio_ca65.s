@@ -668,7 +668,7 @@ FAMISTUDIO_EPSM_PITCH_SHIFT = 3
 FAMISTUDIO_FIRST_EXP_INST_CHANNEL = 5
 
 .if FAMISTUDIO_EXP_EPSM
-FAMISTUDIO_FIRST_POSITIVE_SLIDE_CHANNEL = 6
+FAMISTUDIO_FIRST_POSITIVE_SLIDE_CHANNEL = 3
 .else
 FAMISTUDIO_FIRST_POSITIVE_SLIDE_CHANNEL = 3
 .endif
@@ -2237,7 +2237,7 @@ famistudio_update_epsm_fm_channel_sound:
     @vol_offset = famistudio_r0
 
     lda #0
-    sta famistudio_chn_inst_changed+3,y
+    sta famistudio_chn_inst_changed,y
 
     ; If the writes are done to channels 0-2, use FAMISTUDIO_EPSM_REG_SEL0 if 3-5 use FAMISTUDIO_EPSM_REG_SEL1
     ; This reg_offset stores the difference so we can later load it into x and do sta FAMISTUDIO_EPSM_REG_SEL0, x

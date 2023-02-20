@@ -1148,7 +1148,7 @@ done:
 .elseif FAMISTUDIO_EXP_S5B
     NUM_EQUALIZERS = 8
 .elseif FAMISTUDIO_EXP_EPSM
-    NUM_EQUALIZERS = 14 ; We dont display the rhythm channels
+    NUM_EQUALIZERS = 8 ; We dont display the rhythm channels
 .elseif FAMISTUDIO_EXP_N163
     NUM_EQUALIZERS = 5 + FAMISTUDIO_EXP_N163_CHN_CNT
 .elseif FAMISTUDIO_EXP_FDS
@@ -1191,9 +1191,6 @@ equalizer_ppu_addr_lo_lookup:
     .byte $8f ; S5B Square 2
     .byte $93 ; S5B Square 3
 .elseif FAMISTUDIO_EXP_EPSM
-    .byte $83 ; EPSM Square 1
-    .byte $86 ; EPSM Square 2
-    .byte $89 ; EPSM Square 3
     .byte $8c ; EPSM FM1
     .byte $8f ; EPSM FM2
     .byte $92 ; EPSM FM3
@@ -1399,7 +1396,12 @@ loop:
 
 draw:
 
-    jsr famistudio_update
+lda #$1f
+sta $2001
+    jsr famistudio_update ; TODO: Call in NMI.
+
+lda #$1e
+sta $2001
     jsr update_all_equalizers
 
 draw_done:

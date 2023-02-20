@@ -72,7 +72,7 @@ void Nes_EPSM::treble_eq(blip_eq_t const& eq)
 
 void Nes_EPSM::enable_channel(int idx, bool enabled)
 {
-	if (idx < 3)
+	/*if (idx < 3)
 	{
 		if (psg)
 		{
@@ -82,15 +82,15 @@ void Nes_EPSM::enable_channel(int idx, bool enabled)
 				PSG_setMask(psg, psg->mask | (1 << idx));
 		}
 	}
-
-	if (idx < 9 && idx > 2)
-	{
+	*/
+	//if (idx < 9 && idx > 2)
+	//{
 		if (enabled)
-			mask_fm = mask_fm | (1 << (idx-3));
+			mask_fm = mask_fm | (1 << (idx));
 		else
-			mask_fm = mask_fm & ~(1 << (idx-3));
-	}
-
+			mask_fm = mask_fm & ~(1 << (idx));
+	//}
+	/*
 	if (idx > 8)
 	{
 		if (enabled)
@@ -98,20 +98,20 @@ void Nes_EPSM::enable_channel(int idx, bool enabled)
 		else
 			mask_rhythm = mask_rhythm & ~(1 << (idx-9));
 	}
-
-	if (idx > 2)
-	{
+	*/
+	//if (idx > 2)
+	//{
 		if (enabled)
 		{
-			opn2_mask = opn2_mask & ~(1 << (idx-3));
+			opn2_mask = opn2_mask & ~(1 << (idx));
 			OPN2_MuteChannel(&opn2, opn2_mask);
 		}
 		else
 		{
-			opn2_mask = opn2_mask | (1 << (idx-3));
+			opn2_mask = opn2_mask | (1 << (idx));
 			OPN2_MuteChannel(&opn2, opn2_mask);
 		}
-	}
+	//}*/
 }
 
 void Nes_EPSM::write_register(cpu_time_t time, cpu_addr_t addr, int data)

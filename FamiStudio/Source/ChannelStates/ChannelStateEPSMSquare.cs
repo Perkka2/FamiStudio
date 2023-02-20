@@ -8,7 +8,7 @@ namespace FamiStudio
 
         public ChannelStateEPSMSquare(IPlayerInterface player, int apuIdx, int channelType, bool pal) : base(player, apuIdx, channelType, pal)
         {
-            channelIdx = channelType - ChannelType.EPSMSquare1;
+            //channelIdx = channelType - ChannelType.EPSMSquare1;
         }
 
         public override void UpdateAPU()

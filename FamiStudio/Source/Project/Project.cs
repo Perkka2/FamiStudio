@@ -1833,7 +1833,7 @@ namespace FamiStudio
             "Nintendo MMC5",
             "Namco 163",
             "Sunsoft 5B",
-            "EPSM"
+            "EPSM Lite"
         };
 
         public static readonly string[] ShortNames =

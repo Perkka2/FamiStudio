@@ -10,7 +10,7 @@ namespace FamiStudio
 
         public ChannelStateEPSMRythm(IPlayerInterface player, int apuIdx, int channelType, bool pal) : base(player, apuIdx, channelType, pal)
         {
-            channelIdx = channelType - ChannelType.EPSMrythm1;
+            //channelIdx = channelType - ChannelType.EPSMrythm1;
         }
 
         protected override void LoadInstrument(Instrument instrument)

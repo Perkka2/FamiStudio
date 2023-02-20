@@ -696,16 +696,9 @@ namespace FamiStudio
                 case ChannelType.Vrc7Fm5:
                 case ChannelType.Vrc7Fm6:
                     return NoteTableVrc7;
-                case ChannelType.EPSMSquare1:
-                case ChannelType.EPSMSquare2:
-                case ChannelType.EPSMSquare3:
-                    return NoteTableEPSM;
                 case ChannelType.EPSMFm1:
                 case ChannelType.EPSMFm2:
                 case ChannelType.EPSMFm3:
-                case ChannelType.EPSMFm4:
-                case ChannelType.EPSMFm5:
-                case ChannelType.EPSMFm6:
                     return NoteTableEPSMFm;
                 default:
                     return pal ? NoteTablePAL : NoteTableNTSC;
@@ -730,9 +723,6 @@ namespace FamiStudio
                 case ChannelType.EPSMFm1:
                 case ChannelType.EPSMFm2:
                 case ChannelType.EPSMFm3:
-                case ChannelType.EPSMFm4:
-                case ChannelType.EPSMFm5:
-                case ChannelType.EPSMFm6:
                 case ChannelType.N163Wave1:
                 case ChannelType.N163Wave2:
                 case ChannelType.N163Wave3:

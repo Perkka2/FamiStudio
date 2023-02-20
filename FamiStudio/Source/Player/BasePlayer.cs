@@ -501,24 +501,10 @@ namespace FamiStudio
                 case ChannelType.S5BSquare2:
                 case ChannelType.S5BSquare3:
                     return new ChannelStateS5B(this, apuIdx, channelType, pal);
-                case ChannelType.EPSMSquare1:
-                case ChannelType.EPSMSquare2:
-                case ChannelType.EPSMSquare3:
-                    return new ChannelStateEPSMSquare(this, apuIdx, channelType, pal);
                 case ChannelType.EPSMFm1:
                 case ChannelType.EPSMFm2:
                 case ChannelType.EPSMFm3:
-                case ChannelType.EPSMFm4:
-                case ChannelType.EPSMFm5:
-                case ChannelType.EPSMFm6:
                     return new ChannelStateEPSMFm(this, apuIdx, channelType, pal);
-                case ChannelType.EPSMrythm1:
-                case ChannelType.EPSMrythm2:
-                case ChannelType.EPSMrythm3:
-                case ChannelType.EPSMrythm4:
-                case ChannelType.EPSMrythm5:
-                case ChannelType.EPSMrythm6:
-                    return new ChannelStateEPSMRythm(this, apuIdx, channelType, pal);
             }
 
             Debug.Assert(false);
