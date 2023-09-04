@@ -3413,24 +3413,6 @@ famistudio_update:
     .endif
 .endif
 
-.if FAMISTUDIO_USE_PHASE_RESET
-@clear_phase_reset_flags:
-    lda #0
-    sta famistudio_phase_reset
-    .if FAMISTUDIO_EXP_N163
-        sta famistudio_phase_reset_n163
-    .endif
-.endif
-
-.if FAMISTUDIO_USE_PHASE_RESET
-@clear_phase_reset_flags:
-    lda #0
-    sta famistudio_phase_reset
-    .if FAMISTUDIO_EXP_N163
-        sta famistudio_phase_reset_n163
-    .endif
-.endif
-
 @update_sound_done:
 .if FAMISTUDIO_USE_FAMITRACKER_TEMPO
     lda famistudio_song_speed
