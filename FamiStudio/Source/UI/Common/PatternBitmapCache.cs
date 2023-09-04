@@ -263,15 +263,19 @@ namespace FamiStudio
             var instrument = note.Instrument;
 
             var color = Theme.LightGreyColor1;
-            if (dpcm)
+
+            if (instrument != null)
             {
-                var mapping = project.GetDPCMMapping(note.Value);
-                if (mapping != null)
-                    color = mapping.Sample.Color;
-            }
-            else if (instrument != null)
-            {
-                color = instrument.Color;
+                if (dpcm && Settings.DpcmColorMode == Settings.ColorModeSample)
+                {
+                    var mapping = instrument.GetDPCMMapping(note.Value);
+                    if (mapping != null && mapping.Sample != null)
+                        color = mapping.Sample.Color;
+                }
+                else if (instrument != null)
+                {
+                    color = instrument.Color;
+                }
             }
 
             for (int j = 0; j < noteSizeY; j++)
@@ -298,7 +302,7 @@ namespace FamiStudio
 
             // Create new texture.
             var texture = new CacheTexture();
-            texture.bmp  = graphics.CreateEmptyBitmap(PatternCacheTextureSize, PatternCacheTextureSize, true, false);
+            texture.bmp  = graphics.CreateEmptyBitmap(PatternCacheTextureSize, PatternCacheTextureSize, TextureFormat.Rgba, false);
             InitCacheRows(texture);
             textureIdx = cacheTextures.Count;
             cacheTextures.Add(texture);

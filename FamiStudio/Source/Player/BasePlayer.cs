@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -18,7 +18,8 @@ namespace FamiStudio
     public interface IPlayerInterface
     {
         void NotifyInstrumentLoaded(Instrument instrument, long channelTypeMask);
-        void NotifyRegisterWrite(int apuIndex, int reg, int data);
+        void NotifyYMMixerSettingsChanged(int ymMixerSettings, long channelTypeMask);
+        void NotifyRegisterWrite(int apuIndex, int reg, int data, List<int> metadata = null);
     }
 
     public class BasePlayer : IPlayerInterface
@@ -251,9 +252,8 @@ namespace FamiStudio
 
             if (startNote != 0)
             {
-                seeking = true;
-                NesApu.StartSeeking(apuIndex);
-
+                StartSeeking();
+                
                 AdvanceChannels();
                 UpdateChannels();
                 UpdateTempo();
@@ -264,8 +264,7 @@ namespace FamiStudio
                         break;
                 }
 
-                NesApu.StopSeeking(apuIndex);
-                seeking = false;
+                StopSeeking();
             }
             else
             {
@@ -353,6 +352,19 @@ namespace FamiStudio
 
             return true;
         }
+
+        protected void StartSeeking()
+        {
+            seeking = true;
+            NesApu.StartSeeking(apuIndex);
+        }
+
+        protected void StopSeeking()
+        {
+            NesApu.StopSeeking(apuIndex);
+            seeking = false;
+        }
+
 
         protected bool AdvanceSong(int songLength, LoopMode loopMode)
         {
@@ -571,7 +583,18 @@ namespace FamiStudio
             }
         }
 
-        public virtual void NotifyRegisterWrite(int apuIndex, int reg, int data)
+        public void NotifyYMMixerSettingsChanged(int ymMixerSettings, long channelTypeMask)
+        {
+            foreach (var channelState in channelStates)
+            {
+                if (((1L << channelState.InnerChannelType) & channelTypeMask) != 0)
+                {
+                    channelState.YMMixerSettingsChangedNotify(ymMixerSettings);
+                }
+            }
+        }
+
+        public virtual void NotifyRegisterWrite(int apuIndex, int reg, int data, List<int> metadata = null)
         {
         }
 

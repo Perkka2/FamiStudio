@@ -128,6 +128,8 @@ namespace FamiStudio
 
                     BeginFrame();
 
+                    var now = DateTime.Now;
+
                     if (!noteQueue.IsEmpty)
                     {
                         PlayerNote lastNote = new PlayerNote();
@@ -142,12 +144,23 @@ namespace FamiStudio
                             if (lastNote.note.IsMusical)
                                 channelStates[activeChannel].ForceInstrumentReload();
 
+                            // HACK : If we played a DPCM sample before, the DAC value
+                            // may not be the default and this will affect the volume
+                            // of the triangle/noise channel. Reset it to the default.
+                            if (activeChannel == ChannelType.Triangle || 
+                                activeChannel == ChannelType.Noise)
+                            {
+                                var dacNote = new Note();
+                                dacNote.DeltaCounter = NesApu.DACDefaultValue;
+                                channelStates[ChannelType.Dpcm].PlayNote(dacNote);
+                            }
+
                             channelStates[activeChannel].PlayNote(lastNote.note);
 
                             if (lastNote.note.IsRelease)
                             {
                                 lastNoteWasRelease = true;
-                                lastReleaseTime = DateTime.Now;
+                                lastReleaseTime = now;
                             }
                             else
                             {
@@ -161,8 +174,7 @@ namespace FamiStudio
 
                     if (lastNoteWasRelease &&
                         activeChannel >= 0 &&
-                        Settings.InstrumentStopTime >= 0 &&
-                        DateTime.Now.Subtract(lastReleaseTime).TotalSeconds >= Settings.InstrumentStopTime)
+                        now.Subtract(lastReleaseTime).TotalSeconds >= Math.Max(0.01f, Settings.InstrumentStopTime))
                     {
                         EnableChannelType(channelStates[activeChannel].InnerChannelType, false);
                         activeChannel = -1;

@@ -15,6 +15,8 @@ namespace FamiStudio
         public event PropertyWantsCloseDelegate PropertyWantsClose;
         public delegate void PropertyClickedDelegate(PropertyPage props, ClickType click, int propIdx, int rowIdx, int colIdx);
         public event PropertyClickedDelegate PropertyClicked;
+        public delegate bool PropertyCellEnabledDelegate(PropertyPage props, int propIdx, int rowIdx, int colIdx); 
+        public event PropertyCellEnabledDelegate PropertyCellEnabled;
 
         private object userData;
         private int advancedPropertyStart = -1;
@@ -28,6 +30,7 @@ namespace FamiStudio
     public enum PropertyType
     {
         TextBox,
+        FileTextBox,
         ColoredTextBox,
         NumericUpDown,
         Slider,

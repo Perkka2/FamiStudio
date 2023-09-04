@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace FamiStudio
 {
@@ -26,6 +27,7 @@ namespace FamiStudio
         protected int[] envelopeValues = new int[EnvelopeType.Count];
         protected bool noteTriggered = false;
         protected bool noteReleased = false;
+        protected bool resetPhase = false;
         protected bool forceInstrumentReload = false;
         protected ushort[] noteTable = null;
         protected bool palPlayback = false;
@@ -321,6 +323,11 @@ namespace FamiStudio
             {
                 delayedCutCounter = note.CutDelay + 1;
             }
+
+            if (note.HasPhaseReset)
+            {
+                resetPhase = true;
+            }
         }
 
         private void UpdateDelayedNote()
@@ -469,10 +476,10 @@ namespace FamiStudio
             }
         }
 
-        protected void WriteRegister(int reg, int data, int skipCycles = 4)
+        protected void WriteRegister(int reg, int data, int skipCycles = 4, List<int> metadata = null)
         {
             NesApu.WriteRegister(apuIdx, reg, data);
-            player.NotifyRegisterWrite(apuIdx, reg, data);
+            player.NotifyRegisterWrite(apuIdx, reg, data, metadata);
             
             // Internally, NesSndEmu skips 4 cycles. Here we have the option to add more.
             skipCycles -= 4;
@@ -511,6 +518,10 @@ namespace FamiStudio
         }
 
         public virtual void IntrumentLoadedNotify(Instrument instrument)
+        {
+        }
+
+        public virtual void YMMixerSettingsChangedNotify(int ymMixerSettings)
         {
         }
 
@@ -561,6 +572,7 @@ namespace FamiStudio
         {
             noteTriggered = false;
             noteReleased = false;
+            resetPhase = false;
             NesApu.SkipCycles(apuIdx, CyclesBetweenChannels);
         }
 

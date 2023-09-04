@@ -1,29 +1,30 @@
-4.0.7
-=====
-- Add temple raiders demo song (MMC5)
-- Add replace with current instrument on PC.
-- Tromino, key issues. https://discord.com/channels/747649221879922840/747649222354010173/1060127173006069820
-- Bug FDS influences EPSM??? https://discord.com/channels/747649221879922840/747649222354010173/1060544346098770011
-- Bug NSF vibrato github
-- N163 multiplex?
-- Numpad delete
-- Context menu to copy/paste EPSM/VRC7 register values as text.
-- Add confirmation for overwrite on mobile
+4.2.0 Brainstorm
+=================
+- Review OpenGL 3.3 requirements, can we lower this to 3.2, 3.1, 3.0?
+- Upgrade Windows to .NET 6.0
+- Switch to .NET for Android too.
+- Instrument folders + collapse entire sections (samples, arps, etc.) 
+- Finish/fix phase reset support
+- FDS automod
+- Latency improvements, decouple buffered audio frames VS. buffered emulated frames.
+- Make MacOS icons respect 10% border (https://developer.apple.com/design/human-interface-guidelines/icons)
+- Video export improvements? Unified piano roll, preview, etc?
+- Android media player notification option
+- Fix that bug where patterns are modified twice if you select 2 instances
+- When using shy mode, we could make the patterns larger if there is room.
 
-4.1.0
+Later
 =====
-- NSF import issue TF74
-- Mark : Option to prevent android from going to sleep while playing.
-- Option to set snapping auto depending on last resize.
-- Dual APU (VT02) support?
-- Stereo export and NSF import on Android?
-- CTRL + Drag for pattern instance/copy is the last thing that requires keyboard input.
-- Proportionnal volume adjust
-- "Read only" N163 instrument. Just specify RAM position + size. Other instruments will do the writing.
+- Borrow TNS-HFC3 from forple in sept/oct.
 
-Batch convert PNG -> TGA
-==========================
-"c:\Program Files\ImageMagick-7.1.0-Q8\magick.exe" mogrify -path D:\Dump\Icons\Out\Tga -compress RLE -format tga *.png
+dotnet publish
+==============
+- dotnet publish /p:Configuration=Release /p:Platform="x64" ../FamiStudio/FamiStudio.csproj -r win-x64 -c Release -f net5.0 --self-contained
+- Copies all the runtime with the build, kind of weird.
+
+Android SDK 12
+==============
+- Java path : C:\Program Files\Microsoft\jdk-11.0.12.7-hotspot
 
 Linux notes 
 =========== 
@@ -68,7 +69,7 @@ MacOS notes
 
 Convert PNG to TGA
 ==================
-magick mogrify -path C:\Dump\PngToTga\Tga\ -format tga -compress RLE *.png
+"c:\Program Files\ImageMagick-7.1.0-Q8\magick.exe" mogrify -path D:\Dump\Icons\Out\Tga -compress RLE -format tga *.png
 
 Android Notes
 =============
@@ -77,6 +78,8 @@ Key Store
 - Pass : Usual x2
 - 30 Years
 - Only full name entered.
+Issues with device monitor not starting:
+- Remove new java (11, the one from Microsoft) from the path. Keep the old one (eclipse, 8).
 
 Desktop tutorial GIFs
 =====================
@@ -87,13 +90,22 @@ Desktop tutorial GIFs
 
 Trailer/scroll 
 ============== 
-- Stashed in 5beed88a1bc487ec2cbc725b9d749a464e57dece. 
+- Need to install System.Drawing.Common 5.0.3
+- Change net5.0 to net5.0-windows
+- Stashed in 933bf502b3f46d8d9fda25fb815cc7602479b4b6. 
  
 MkDocs 
 ====== 
 - Install Python 
 - pip install mkdocs 
 - pip install mkdocs-bootswatch 
+- pip install mkdocs-meta-descriptions-plugin
+- Modify "%localappdata%\Programs\Python\Python311\Lib\site-packages\mkdocs\themes\mkdocs\base.html"
+		{% if page.meta and page.meta.description %}
+		<meta name="description" content="{{ page.meta.description }}">
+		{% elif config.site_description %}
+		<meta name="description" content="{{ config.site_description }}">
+		{% endif %}
  
 Discord 
 ======= 
@@ -101,29 +113,51 @@ Discord
 
 Backlog: 
 =========
+- Low slide notes going down + arp going up = glitch. Fix idea : Internally modify the arp to make it less strong based on slide range (ex: div by 4 if doing down 2 octaves).
+  https://discord.com/channels/747649221879922840/1024388342210642150/1147714295581388910
+- MacOS sound glitches out after a while (doesnt happen here on BigSur)
+	https://discord.com/channels/@me/819772561940152321/1146697308545753108
+- Android encoder bitrate is messed up.
+- Piano roll video compression issues?
+- "Comment" box in project. Proto DM
+- When multiple VRC7 instrument all use patch 0 at same time (like on first note), they all upload it. Its stupid. Only the first one should, or something like that.
+- OSC trigger assert 
+- Option to keep unused samples when exporting to sound engine. 
+	=> Shelved, will need more work.
+- No-attack refactor:
+	- instrument change:
+		* optional : disable attack
+		* optional : change the instrument, for FM instrument, will look if attack is disabled and not rebind envelopes if disabled.
+		* play a note (if attack, reset envelopes)
+	- problems:
+		* what about the delayed cut thing? 
+		* will likely need a couple more zp variables.
+- Replace an specific instrument by another in selection (A->B), R+CLICK.
+- How to add to the "open with" list on Android.
+- Better autosave names?
+- Going in settings unutes all channels.
+- Delete instruments resets play head.
+- We should be able to drag/copy samples mappings between instruments.
+- Export DMC samples on Mobile.
+- Option to set snapping auto depending on last resize.
+- "Read only" N163 instrument. Just specify RAM position + size. Other instruments will do the writing.
+- NSF import issue TF74
 - FDS oscilloscope can assert if you use modulation table to produce very low sound.
 - Fix "SeparateChannelsExportTndMode"
-- Can we pahse reset N163? Steo mentionned that in very low note, he notices that the waveform starts from the middle.
+- Dual APU (VT02) support? Mesen doesnt support it, fuck it. 
 - S5B is 1 octave off. Periods are 12 bits, so technically can do lower, but we still bottom at A0???
 - Shy mode on mobile?
-- Max song length is still 256, bump that to 1024 at least.
-- Linux : new openal+ smarter detection. Need a way to try the OS one + my one if it fails.
-- BUG : Quit menu doesnt nothing on MacOS
-- BUG : VRC7 doesnt respect release point on volume envelope (its a "custom release" so it ignores it... Ugh) EPSM probably too.
+- BUG : Quit menu does nothing on MacOS
 - Weird shift when using an external display with different scaling (ex: 100% vs 150%)
 - Add effect to select N163 wave. How does it react in FT.
 - Full range volume for expansions?
 - Different aspect ratios for video export?
 - Improve linux file dialog (Steo feedback)
 - Hold SHIFT+click for multiple delete.
-- Improve expansion tooltips.
 - Idea from perkka "When an instrument is selected. Have the channels thats not supported by it slightly faded out, or the channel names that support it in bold or something"
 - Do a pass on tooltips for ParamProviders.
-- Way to convert instrument between expansions.
 - Left resize to preserve release position?
-- Full S5B support? Not very intersting... Noise + envelopes. Meuh.
 - Display number of selected channels in grid for video export?
-- Dark mode for open/save dialogs on MacOS? + title bar?
 - BUG : Drag single pattern (with one note covring the entire pattern) from 1 channel to the other while its playing, the old note keeps playing and adds on top.
 - BUG : "theres a bug where when you select a pattern multiple times and you try to change a note, the change is multiplied by the # of patterns you selected", see video.
 - Reorder channels for video export.
@@ -131,12 +165,9 @@ Backlog:
 - Hardware sweep (how to not conflict with smooth vibrato?)
 - Scales
 - Raw FDS modulation table envelope. 
-- Instrument folders + collapse entire sections (samples, arps, etc.) 
-- Alphabetical ordering should be a bit smarter about numbers.
 - Sound output selection?
 - Give better names to auto saves
 - Android : Starting scroll on a slider (in vrc7 instrument) changes the value. How to fix???
-- Volume/effect scaling, easy one we have context menus.
 - Cleanup : remove duplicated fx values (ex: same volume applied multiple times)
 - Paste special, option to rename patterns.
 - ffmpeg path on Linux should work on path (Puna on CC discord).
@@ -150,4 +181,3 @@ Backlog:
 - Improve no-attack.
 	- Allow disabling attacks if all envelopes of both instruments are exactly the same.
 	- Draw attack as red if user makes a mistake.
-- Wayland support on Linux (GLFW supports it). Standard file dialogs.

@@ -14,6 +14,7 @@ obj/
 .vs/
 Debug/
 Release/
+ReleaseAPK/
 packages/
 site/
 *.htm
@@ -43,3 +44,4 @@ FamiStudio/FamiStudio.args.json
 SoundEngine/DemoSource/demo_cc65.s
 
 SoundEngine/Tools/tmp.bin
+FamiStudio/Properties/launchSettings.json

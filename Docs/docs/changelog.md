@@ -1,6 +1,104 @@
 # Change Log
 
-Version history / release notes for each release.
+Version history / release notes for each release. 
+
+To download older versions or view the release dates, please visit the [Github Releases](https://github.com/BleuBleu/FamiStudio/releases) page.
+
+## Version 4.1.3 (Hotfix)
+
+Changes/Fixes:
+
+* Fixed "pop" when opening N163 projects or playing N163 songs
+* Fixed colors becoming progressively washed out when performing specific actions on Android
+* Fixed overwrite confirmation dialog not appearing if you type the exact same name of an existing project on Android
+* Fixed issue where envelope editor would let you set releases on FDS waveform  
+* Fixed "Unassign unused DPCM instrument keys" cleanup option not working if another DPCM instrument was using the same piano key
+* Fixed bug introduced in 4.1.2 where notes were replaying their attack if a gap was left between the notes
+* Fixed issue where note attacks were re-triggers unconditionally when crossing the loop point when exporting to NSF/ROM/SoundEngine
+* Fixed loophole where you could disable note attacks on the DPCM channel by duplicating patterns
+* Fixed DPCM samples not importing correctly from FamiTracker TXT files
+* Fixed issue where arpeggios imported from FamiTracker files would not play sometimes
+* Fixed issue when exporting N163 songs to NSF/ROM/FDS/SoundEngine with instrument names only differentiated by special characters
+* Fixed QWERTY piano input getting stuck if pressing another key while holding a key
+* Names that are too long to fit in the project explorer are now truncated with ellipsis (...) on Desktop (was already the case on Mobile)
+* Upgraded to Android API level 33 (Android 13.0)
+
+## Version 4.1.2 (Hotfix)
+
+Changes/Fixes:
+
+* Fixed instrument context menu disappearing when using a left-click
+* Fixed "Follow Mode" jittering when using small % values
+* Fixed out of range volumes when importing .fti containing FDS instruments
+* Fixed effect icons sometimes visible past the end of a pattern
+* Fixed issue where instruments fail to load properly when a stop note is used before any other notes
+* Fixed crash when playing a note from all channels with all expansions enabled
+* Fixed a couple of minor issues with demo songs
+* Fixed N163 emulation issue where waves where not properly biased by -8
+* OPNI instrument import support for EPSM instruments (Perkka contribution)
+* Minor localization fixes
+* An APK of the Android version is now available for download, but no support will be provided if it does not work on your device
+
+Breaking/Behavior changes:
+
+* Songs using 7 or 8 N163 channels may sound slight quieter now and volume might react a bit differently as well
+
+## Version 4.1.1 (Hotfix)
+
+Changes/Fixes:
+
+* Fixed DPCM samples not playing when exporting to ROM with VRC6
+* Fixed transposition of DPCM samples incorrectly affecting all instruments
+* Fixed "Clear effect values" not always working
+* Fixed startup crashes with rtmidi on Linux and updating the version we provide
+* Fixed export of DPCM samples with FamiStudio Text format
+* Fixed file association on Windows when using the portable EXE version
+* Fixed file association on MacOS not always working
+* Fixed first mouse click outside a context menu being ignored (will behave like 4.0.x)
+* Fixed occasional crash on MacOS when using Cmd+Q
+* Fixed issues with MIDI device on MacOS
+* Fixed trackpad controls on MacOS 
+* Fixed keyboard shortcut confusion with select/force display channels
+* Fixed minor localization issues.
+* Changed the ffmpeg path option to allow text input, and allow using ffmpeg if its on the PATH
+* Changed the default keyboard shortcut to force display channel to SHIFT + F-keys on MacOS to avoid issues
+
+## Version 4.1.0
+
+Changes/Fixes:
+
+* DPCM improvements:
+	* No more "DPCM instrument", each instrument can have DPCM samples assigned (a-la FamiTracker)
+	* Up to 256KB of samples using bank switching.
+* Configurable keyboard shortcuts
+* Text rendering changes, small text may look slightly blurrier. 
+* More UI scaling % options
+* More context menus options throughout the app
+* Option to mix N163 or not
+* Project explorer sorting improvements
+* NSF import support on Android
+* Stereo and delay export support on Android.
+* Sunsoft 5B noise support (Perkka contribution)
+* VGM & WAV code cleanup (alexmush contribution)
+* VGM import support (Perkka & alexmush contribution)
+* Translations:
+	* Spanish (NicolAR, zukinnyk and LagMager contribution)
+	* Portuguese (BeepsNBoops contribution)
+	* Simplified chinese (xwjcool123 and FRC contribution)
+
+System Requirement Changes:
+
+* Windows version is now 64-bit and targets .NET 5.0.
+* Linux/MacOS versions now uses .NET 6.0. Mono is not longer used (See [installation](install.md) page for .NET download links)
+* MacOS now requires at least Catalina and will run natively on ARM if you install the ARM version of .NET
+* All desktop version now requires OpenGL 3.3.
+* Android version now requires OpenGL ES 2.0.
+* Windows 7 and 32-bit systems are longer supported.
+
+<div style="position:relative;margin-left: auto;margin-right: auto;width:80%;height:0;padding-bottom:45%;">
+	<iframe style="position:absolute;top:0;left:0;width:100%;height:100%" src="https://www.youtube.com/embed/1xQbFUGz0Co" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+</div>
+<br/>
 
 ## Version 4.0.6 (Hotfix)
 

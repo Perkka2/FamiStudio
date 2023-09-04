@@ -246,6 +246,12 @@ namespace FamiStudio
                         note.Instrument = null;
                     foundAnyUnsupportedFeature = true;
                 }
+                if (!note.HasAttack && !channel.SupportsNoAttackNotes)
+                {
+                    if (!checkOnly)
+                        note.HasAttack = true;
+                    foundAnyUnsupportedFeature = true;
+                }
             }
 
             if (notesToRemove != null)
@@ -306,6 +312,39 @@ namespace FamiStudio
                 var note = vals[i];
                 if (note == null || note.IsEmpty || note.IsUseless)
                     notes.Remove(keys[i]);
+            }
+        }
+
+        public void FixBadData()
+        {
+            var vals = notes.Values;
+
+            for (int i = vals.Count - 1; i >= 0; i--)
+            {
+                // Old version had a FamiTracker import bug that would assign arpeggios to
+                // non-musical notes.
+                var note = vals[i];
+                if (note != null && note.Arpeggio != null && !note.IsMusical)
+                    note.Arpeggio = null;
+            }
+        }
+
+        public void RemoveDpcmNotesWithoutMapping()
+        {
+            Debug.Assert(Channel.IsDpcmChannel);
+
+            var keys = notes.Keys;
+            var vals = notes.Values;
+
+            for (int i = vals.Count - 1; i >= 0; i--)
+            {
+                var note = vals[i];
+                if (note != null && note.IsMusical && (note.Instrument == null || note.Instrument.GetDPCMMapping(note.Value) == null))
+                { 
+                    note.Clear(true);
+                    if (note.IsEmpty)
+                        notes.Remove(keys[i]);
+                }
             }
         }
 
@@ -383,12 +422,16 @@ namespace FamiStudio
                 Debug.Assert(note.Release == 0 || note.Release > 0 && note.Release < note.Duration);
                 Debug.Assert((note.IsMusical && note.Duration > 0) || (note.IsStop && note.Duration == 1) || (!note.IsMusicalOrStop && note.Duration == 0));
                 Debug.Assert(!note.IsValid || note.IsRelease || note.Value <= Note.MusicalNoteMax);
+                Debug.Assert(!note.IsStop || note.Instrument == null);
+                Debug.Assert(note.Arpeggio == null || note.IsMusical);
 
                 for (int i = 0; i < Note.EffectCount; i++)
                 {
                     if (note != null && note.HasValidEffectValue(i))
                     {
-                        Debug.Assert(channel.SupportsEffect(i));
+                        if(!channel.SupportsEffect(i))
+                            Debug.Assert(channel.SupportsEffect(i));
+
                         var val = note.GetEffectValue(i);
                         var min = Note.GetEffectMinValue(song, channel, i);
                         var max = Note.GetEffectMaxValue(song, channel, i);
@@ -488,6 +531,9 @@ namespace FamiStudio
                 // This can happen when pasting from an expansion to another. We wont find the channel.
                 if (buffer.Project.IsChannelActive(channelType))
                     ClearNotesPastMaxInstanceLength();
+
+                if (!buffer.IsForUndoRedo)
+                    FixBadData();
             }
         }
     }

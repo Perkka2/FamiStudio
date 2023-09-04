@@ -229,7 +229,7 @@ namespace FamiStudio
                 else
                 {
                     var beatLengths = Utils.GetFactors(patternLength);
-                    beatLength = beatLengths[beatLengths.Length / 2];
+                    beatLength = beatLengths.Length == 0 ? 1 : beatLengths[beatLengths.Length / 2];
                 }
             }
             else
@@ -391,6 +391,11 @@ namespace FamiStudio
         {
             foreach (var channel in channels)
                 channel.DeleteEmptyNotes();
+        }
+
+        public void RemoveDpcmNotesWithoutMapping()
+        {
+            channels[ChannelType.Dpcm].RemoveDpcmNotesWithoutMapping();
         }
 
         public void DeleteNotesPastMaxInstanceLength()
@@ -556,9 +561,9 @@ namespace FamiStudio
                     {
                         foreach (var note in pattern.Notes.Values)
                         {
-                            if (note.IsValid && !note.IsStop)
+                            if (note.IsMusical && note.Instrument != null)
                             {
-                                var mapping = project.GetDPCMMapping(note.Value);
+                                var mapping = note.Instrument.GetDPCMMapping(note.Value);
 
                                 if (mapping != null)
                                 {
@@ -841,7 +846,7 @@ namespace FamiStudio
                         {
                             var note = kv.Value;
 
-                            if (note.Instrument != null && !channel.SupportsInstrument(note.Instrument) || channel.Type == ChannelType.Dpcm)
+                            if (note.Instrument != null && !channel.SupportsInstrument(note.Instrument))
                                 note.Instrument = null;
                         }
                     }
@@ -1081,6 +1086,35 @@ namespace FamiStudio
                 {
                     location.PatternIndex++;
                     location.NoteIndex = 0;
+                }
+            }
+        }
+
+        public void ExtendForLooping(int loopCount)
+        {
+            // For looping, we simply extend the song by copying pattern instances.
+            if (loopCount > 1 && LoopPoint >= 0 && LoopPoint < Length)
+            {
+                var originalLength = Length;
+                var loopSectionLength = originalLength - LoopPoint;
+
+                SetLength(Math.Min(Song.MaxLength, originalLength + loopSectionLength * (loopCount - 1)));
+
+                var srcPatIdx = LoopPoint;
+
+                for (var i = originalLength; i < Length; i++)
+                {
+                    foreach (var c in Channels)
+                        c.PatternInstances[i] = c.PatternInstances[srcPatIdx];
+
+                    if (PatternHasCustomSettings(srcPatIdx))
+                    {
+                        var customSettings = GetPatternCustomSettings(srcPatIdx);
+                        SetPatternCustomSettings(i, customSettings.patternLength, customSettings.beatLength, customSettings.groove, customSettings.groovePaddingMode);
+                    }
+
+                    if (++srcPatIdx >= originalLength)
+                        srcPatIdx = LoopPoint;
                 }
             }
         }

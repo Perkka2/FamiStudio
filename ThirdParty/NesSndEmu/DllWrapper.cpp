@@ -94,9 +94,9 @@ extern "C" void __stdcall NesApuSetExpansionVolume(int apuIdx, int expansion, do
 	apu[apuIdx].set_expansion_volume(expansion, volume);
 }
 
-extern "C" void __stdcall NesApuSkipCycles(int apuIdx, int cycles)
+extern "C" int __stdcall NesApuSkipCycles(int apuIdx, int cycles)
 {
-	apu[apuIdx].skip_cycles(cycles);
+	return apu[apuIdx].skip_cycles(cycles);
 }
 
 extern "C" void __stdcall NesApuGetRegisterValues(int apuIdx, int exp, void* regs)
@@ -122,4 +122,9 @@ extern "C" void __stdcall NesApuResetTriggers(int apuIdx)
 extern "C" int __stdcall NesApuGetChannelTrigger(int apuIdx, int exp, int idx)
 {
 	return apu[apuIdx].get_channel_trigger(exp, idx);
+}
+
+extern "C" void __stdcall NesApuSetN163Mix(int apuIdx, int mix)
+{
+	return apu[apuIdx].set_namco_mix(mix);
 }

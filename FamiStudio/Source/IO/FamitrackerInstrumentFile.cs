@@ -72,7 +72,7 @@ namespace FamiStudio
                 env.Release = releasePoint;
 
                 if (env.Length < itemCount)
-                    Log.LogMessage(LogSeverity.Warning, $"{EnvelopeType.Names[envType]} envelope is longer ({itemCount}) than what FamiStudio supports ({env.Length}). Truncating.");
+                    Log.LogMessage(LogSeverity.Warning, $"{EnvelopeType.LocalizedNames[envType]} envelope is longer ({itemCount}) than what FamiStudio supports ({env.Length}). Truncating.");
 
                 Array.Copy(seq, 0, env.Values, 0, env.Length);
             }
@@ -135,6 +135,10 @@ namespace FamiStudio
                 ReadEnvelope(bytes, ref offset, instrument, instrument.Envelopes[EnvelopeType.Volume],   EnvelopeType.Volume);
                 ReadEnvelope(bytes, ref offset, instrument, instrument.Envelopes[EnvelopeType.Arpeggio], EnvelopeType.Arpeggio);
                 ReadEnvelope(bytes, ref offset, instrument, instrument.Envelopes[EnvelopeType.Pitch],    EnvelopeType.Pitch);
+
+                // Famitracker FDS envelopes uses the full volume range (0...32), we stick to 0...15.
+                for (int i = 0; i < instrument.VolumeEnvelope.Length; i++)
+                    instrument.VolumeEnvelope.Values[i] = (sbyte)Math.Min(15, instrument.VolumeEnvelope.Values[i] / 2);
             }
             else if (instType == ExpansionType.None)
             {
@@ -249,14 +253,11 @@ namespace FamiStudio
                     byte pitch  = bytes[mappingOffset++];
                     byte delta  = bytes[mappingOffset++];
 
-                    if (project.NoteSupportsDPCM(idx + 1))
-                    {
-                        project.MapDPCMSample(idx + 1, sampleMap[sample - 1], pitch & 0x0f, (pitch & 0x80) != 0);
-                    }
+                    instrument.MapDPCMSample(idx + 1, sampleMap[sample - 1], pitch & 0x0f, (pitch & 0x80) != 0);
                 }
             }
 
-            project.SortInstruments();
+            project.ConditionalSortInstruments();
 
             return instrument;
         }

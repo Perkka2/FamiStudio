@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading;
 
 namespace FamiStudio
 {
@@ -24,7 +25,7 @@ namespace FamiStudio
         [DllImport(NesSndEmuDll, CallingConvention = CallingConvention.StdCall, EntryPoint = "NesApuEndFrame")]
         public extern static void EndFrame(int apuIdx);
         [DllImport(NesSndEmuDll, CallingConvention = CallingConvention.StdCall, EntryPoint = "NesApuSkipCycles")]
-        public extern static void SkipCycles(int apuIdx, int cycles);
+        public extern static int SkipCycles(int apuIdx, int cycles);
         [DllImport(NesSndEmuDll, CallingConvention = CallingConvention.StdCall, EntryPoint = "NesApuReset")]
         public extern static void Reset(int apuIdx);
         [DllImport(NesSndEmuDll, CallingConvention = CallingConvention.StdCall, EntryPoint = "NesApuEnableChannel")]
@@ -51,6 +52,8 @@ namespace FamiStudio
         public extern static void ResetTriggers(int apuIdx);
         [DllImport(NesSndEmuDll, CallingConvention = CallingConvention.StdCall, EntryPoint = "NesApuGetChannelTrigger")]
         public extern static int GetChannelTrigger(int apuIdx, int exp, int idx);
+        [DllImport(NesSndEmuDll, CallingConvention = CallingConvention.StdCall, EntryPoint = "NesApuSetN163Mix")]
+        public extern static void SetN163Mix(int apuIdx, int mix);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         public delegate int DmcReadDelegate(IntPtr data, int addr);
@@ -175,44 +178,44 @@ namespace FamiStudio
         public const int S5B_ADDR           = 0xc000;
         public const int S5B_DATA           = 0xe000;
                                             
-        public const int S5B_REG_LO_A       = 0x00;
-        public const int S5B_REG_HI_A       = 0x01;
-        public const int S5B_REG_LO_B       = 0x02;
-        public const int S5B_REG_HI_B       = 0x03;
-        public const int S5B_REG_LO_C       = 0x04;
-        public const int S5B_REG_HI_C       = 0x05;
-        public const int S5B_REG_NOISE      = 0x06;
-        public const int S5B_REG_TONE       = 0x07;
-        public const int S5B_REG_VOL_A      = 0x08;
-        public const int S5B_REG_VOL_B      = 0x09;
-        public const int S5B_REG_VOL_C      = 0x0a;
-        public const int S5B_REG_ENV_LO     = 0x0b;
-        public const int S5B_REG_ENV_HI     = 0x0c;
-        public const int S5B_REG_SHAPE      = 0x0d;
-        public const int S5B_REG_IO_A       = 0x0e;
-        public const int S5B_REG_IO_B       = 0x0f;
+        public const int S5B_REG_LO_A          = 0x00;
+        public const int S5B_REG_HI_A          = 0x01;
+        public const int S5B_REG_LO_B          = 0x02;
+        public const int S5B_REG_HI_B          = 0x03;
+        public const int S5B_REG_LO_C          = 0x04;
+        public const int S5B_REG_HI_C          = 0x05;
+        public const int S5B_REG_NOISE_FREQ    = 0x06;
+        public const int S5B_REG_MIXER_SETTING = 0x07;
+        public const int S5B_REG_VOL_A         = 0x08;
+        public const int S5B_REG_VOL_B         = 0x09;
+        public const int S5B_REG_VOL_C         = 0x0a;
+        public const int S5B_REG_ENV_LO        = 0x0b;
+        public const int S5B_REG_ENV_HI        = 0x0c;
+        public const int S5B_REG_SHAPE         = 0x0d;
+        public const int S5B_REG_IO_A          = 0x0e;
+        public const int S5B_REG_IO_B          = 0x0f;
 
         public const int EPSM_ADDR0         = 0x401c;
         public const int EPSM_DATA0         = 0x401d;
         public const int EPSM_ADDR1         = 0x401e;
         public const int EPSM_DATA1         = 0x401f;
 
-        public const int EPSM_REG_LO_A        = 0x00;
-        public const int EPSM_REG_HI_A        = 0x01;
-        public const int EPSM_REG_LO_B        = 0x02;
-        public const int EPSM_REG_HI_B        = 0x03;
-        public const int EPSM_REG_LO_C        = 0x04;
-        public const int EPSM_REG_HI_C        = 0x05;
-        public const int EPSM_REG_NOISE       = 0x06;
-        public const int EPSM_REG_TONE        = 0x07;
-        public const int EPSM_REG_VOL_A       = 0x08;
-        public const int EPSM_REG_VOL_B       = 0x09;
-        public const int EPSM_REG_VOL_C       = 0x0a;
-        public const int EPSM_REG_ENV_LO      = 0x0b;
-        public const int EPSM_REG_ENV_HI      = 0x0c;
-        public const int EPSM_REG_SHAPE       = 0x0d;
-        public const int EPSM_REG_IO_A        = 0x0e;
-        public const int EPSM_REG_IO_B        = 0x0f;
+        public const int EPSM_REG_LO_A          = 0x00;
+        public const int EPSM_REG_HI_A          = 0x01;
+        public const int EPSM_REG_LO_B          = 0x02;
+        public const int EPSM_REG_HI_B          = 0x03;
+        public const int EPSM_REG_LO_C          = 0x04;
+        public const int EPSM_REG_HI_C          = 0x05;
+        public const int EPSM_REG_NOISE_FREQ    = 0x06;
+        public const int EPSM_REG_MIXER_SETTING = 0x07;
+        public const int EPSM_REG_VOL_A         = 0x08;
+        public const int EPSM_REG_VOL_B         = 0x09;
+        public const int EPSM_REG_VOL_C         = 0x0a;
+        public const int EPSM_REG_ENV_LO        = 0x0b;
+        public const int EPSM_REG_ENV_HI        = 0x0c;
+        public const int EPSM_REG_SHAPE         = 0x0d;
+        public const int EPSM_REG_IO_A          = 0x0e;
+        public const int EPSM_REG_IO_B          = 0x0f;
         public const int EPSM_REG_RYTHM       = 0x10;
         public const int EPSM_REG_RYTHM_LEVEL = 0x18;
         public const int EPSM_REG_FM_LO_A     = 0xA0;
@@ -245,6 +248,8 @@ namespace FamiStudio
         public const double FreqC0 = 16.3516;
         public const double FreqRegMin = 15.8862;  //The minimum frequency displayed in the registers tab, C0 - 49.9893 cents
 
+        // When playing back in the app, we always put samples at 0xc000. Completely arbitrary.
+        public const int DPCMSampleAddr = 0xc000;
 
         // Volume set in Nes_Apu::volume for the DMC channel. This is simply to 
         // make sure our preview of DPCM sample somewhat matches the volume of 
@@ -259,7 +264,10 @@ namespace FamiStudio
         public const int DACDefaultValueDiv2 = DACDefaultValue / 2;
 
         // Number of cycles to skip at each EPSM register writes.
-        public const int EpsmCycleSkip = 34;
+        public const int EpsmCycleAddrSkip = 4;
+        public const int EpsmCycleDataSkip = 20;
+        public const int EpsmCycleDataSkipShort = 10;
+        public const int EpsmCycleKeyOnSkip = 36;
 
         public static readonly ushort[]   NoteTableNTSC    = new ushort[97];
         public static readonly ushort[]   NoteTablePAL     = new ushort[97];
@@ -713,6 +721,12 @@ namespace FamiStudio
                 case ChannelType.Vrc6Saw:
                 case ChannelType.Vrc6Square1:
                 case ChannelType.Vrc6Square2:
+                case ChannelType.EPSMSquare1:
+                case ChannelType.EPSMSquare2:
+                case ChannelType.EPSMSquare3:
+                case ChannelType.S5BSquare1:
+                case ChannelType.S5BSquare2:
+                case ChannelType.S5BSquare3:
                     return NesApu.MaximumPeriod12Bit;
                 case ChannelType.Vrc7Fm1:
                 case ChannelType.Vrc7Fm2:
@@ -737,9 +751,16 @@ namespace FamiStudio
             return NesApu.MaximumPeriod11Bit;
         }
 
+        public static ThreadLocal<byte[]> CurrentSample = new ThreadLocal<byte[]>();
+
         public static int DmcReadCallback(IntPtr data, int addr)
         {
-            return FamiStudio.StaticProject.GetSampleForAddress(addr - 0xc000);
+            var sample = CurrentSample.Value;
+            var offset = addr - DPCMSampleAddr;
+            if (sample == null || offset < 0 || offset >= sample.Length)
+                return DACDefaultValue;
+            else
+                return sample[offset];
         }
 
         public static void InitAndReset(int apuIdx, int sampleRate, bool pal, int seperateTndMode, int expansions, int numNamcoChannels, [MarshalAs(UnmanagedType.FunctionPtr)] DmcReadDelegate dmcCallback)
@@ -795,20 +816,23 @@ namespace FamiStudio
                                 // This is mainly because the instrument player might not update all the channels all the time.
                                 WriteRegister(apuIdx, N163_ADDR, N163_REG_VOLUME);
                                 WriteRegister(apuIdx, N163_DATA, (numNamcoChannels - 1) << 4);
+                                SetN163Mix(apuIdx, Settings.N163Mix ? 1 : 0);
                                 break;
                             case APU_EXPANSION_SUNSOFT:
-                                WriteRegister(apuIdx, S5B_ADDR, S5B_REG_TONE);
+                                WriteRegister(apuIdx, S5B_ADDR, S5B_REG_MIXER_SETTING);
                                 WriteRegister(apuIdx, S5B_DATA, 0x38); // No noise, just 3 tones for now.
+                                if ((expansions & APU_EXPANSION_MASK_NAMCO) != 0) // See comment in "ChannelStateS5B.cs".
+                                    WriteRegister(apuIdx, S5B_ADDR, S5B_REG_IO_A);
                                 break;
                             case APU_EXPANSION_EPSM:
-                                WriteRegister(apuIdx, EPSM_ADDR0, EPSM_REG_TONE); SkipCycles(apuIdx, EpsmCycleSkip);
-                                WriteRegister(apuIdx, EPSM_DATA0, 0x38); SkipCycles(apuIdx, EpsmCycleSkip); // No noise, just 3 tones for now.
-                                WriteRegister(apuIdx, EPSM_ADDR0, 0x29); SkipCycles(apuIdx, EpsmCycleSkip);
-                                WriteRegister(apuIdx, EPSM_DATA0, 0x80); SkipCycles(apuIdx, EpsmCycleSkip);
-                                WriteRegister(apuIdx, EPSM_ADDR0, 0x27); SkipCycles(apuIdx, EpsmCycleSkip);
-                                WriteRegister(apuIdx, EPSM_DATA0, 0x00); SkipCycles(apuIdx, EpsmCycleSkip);
-                                WriteRegister(apuIdx, EPSM_ADDR0, 0x11); SkipCycles(apuIdx, EpsmCycleSkip);
-                                WriteRegister(apuIdx, EPSM_DATA0, 0x37); SkipCycles(apuIdx, EpsmCycleSkip);
+                                WriteRegister(apuIdx, EPSM_ADDR0, EPSM_REG_MIXER_SETTING); SkipCycles(apuIdx, EpsmCycleAddrSkip);
+                                WriteRegister(apuIdx, EPSM_DATA0, 0x38); SkipCycles(apuIdx, EpsmCycleDataSkip); // No noise, just 3 tones for now.
+                                WriteRegister(apuIdx, EPSM_ADDR0, 0x29); SkipCycles(apuIdx, EpsmCycleAddrSkip);
+                                WriteRegister(apuIdx, EPSM_DATA0, 0x80); SkipCycles(apuIdx, EpsmCycleDataSkip);
+                                WriteRegister(apuIdx, EPSM_ADDR0, 0x27); SkipCycles(apuIdx, EpsmCycleAddrSkip);
+                                WriteRegister(apuIdx, EPSM_DATA0, 0x00); SkipCycles(apuIdx, EpsmCycleDataSkip);
+                                WriteRegister(apuIdx, EPSM_ADDR0, 0x11); SkipCycles(apuIdx, EpsmCycleAddrSkip);
+                                WriteRegister(apuIdx, EPSM_DATA0, 0x37); SkipCycles(apuIdx, EpsmCycleDataSkip);
                                 break;
                         }
                     }

@@ -18,6 +18,9 @@ namespace FamiStudio
 {
     public class PropertyDialog
     {
+        public delegate bool ValidateDelegate(PropertyPage props);
+        public event ValidateDelegate ValidateProperties;
+
         public delegate void KeyDownDelegate(Dialog dlg, KeyEventArgs e);
         public event KeyDownDelegate DialogKeyDown;
 
@@ -63,9 +66,14 @@ namespace FamiStudio
         {
             FamiStudioWindow.Instance.StartPropertyDialogActivity(callback, this);
         }
+
+        public bool Validate()
+        {
+            return ValidateProperties == null || ValidateProperties.Invoke(Properties);
+        }
     }
 
-    [Activity(Theme = "@style/AppTheme.NoActionBar", ResizeableActivity = false, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize, ScreenOrientation = ScreenOrientation.Behind)]
+    [Activity(Theme = "@style/AppTheme.NoActionBar", ResizeableActivity = false, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden, ScreenOrientation = ScreenOrientation.Behind)]
     public class PropertyDialogActivity : AppCompatActivity
     {
         private const int FragmentViewId  = 1008;
@@ -172,9 +180,14 @@ namespace FamiStudio
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            stoppedByUser = true;
-            SetResult(item != null && item.ItemId == ApplyMenuItemId ? Result.Ok : Result.Canceled);
-            Finish();
+            var apply = item != null && item.ItemId == ApplyMenuItemId;
+
+            if (!apply || dlg.Validate())
+            {
+                stoppedByUser = true;
+                SetResult(apply ? Result.Ok : Result.Canceled);
+                Finish();
+            }
 
             return base.OnOptionsItemSelected(item);
         }

@@ -234,22 +234,26 @@ namespace FamiStudio
 
         protected Instrument CreateUniquelyNamedInstrument(int expansion, string baseName)
         {
-            return project.CreateInstrument(expansion, project.GenerateUniqueInstrumentName(baseName));
+            var name = !string.IsNullOrEmpty(baseName) && project.IsInstrumentNameUnique(baseName) ? baseName : project.GenerateUniqueInstrumentName(baseName); 
+            return project.CreateInstrument(expansion, name);
         }
 
         protected void RenameInstrumentEnsureUnique(Instrument instrument, string baseName)
         {
-            project.RenameInstrument(instrument, project.GenerateUniqueInstrumentName(baseName));
+            var name = !string.IsNullOrEmpty(baseName) && project.IsInstrumentNameUnique(baseName) ? baseName : project.GenerateUniqueInstrumentName(baseName);
+            project.RenameInstrument(instrument, name);
         }
 
         protected DPCMSample CreateUniquelyNamedSampleFromDmcData(string baseName, byte[] data)
         {
-            return project.CreateDPCMSampleFromDmcData(project.GenerateUniqueDPCMSampleName(baseName), data);
+            var name = !string.IsNullOrEmpty(baseName) && project.IsDPCMSampleNameUnique(baseName) ? baseName : project.GenerateUniqueDPCMSampleName(baseName);
+            return project.CreateDPCMSampleFromDmcData(name, data);
         }
 
         protected Song CreateUniquelyNamedSong(string baseName)
         {
-            return project.CreateSong(project.GenerateUniqueSongName(baseName));
+            var name = !string.IsNullOrEmpty(baseName) && project.IsDPCMSampleNameUnique(baseName) ? baseName : project.GenerateUniqueSongName(baseName);
+            return project.CreateSong(name);
         }
 
         protected Arpeggio GetOrCreateArpeggio(int param)
@@ -415,7 +419,7 @@ namespace FamiStudio
 
         private string GetPatternString(Pattern pattern, int n)
         {
-            return $"(Song={pattern.Song.Name}, Channel={ChannelType.Names[pattern.ChannelType]}, Location={pattern.Name}:{n:X2})";
+            return $"(Song={pattern.Song.Name}, Channel={ChannelType.InternalNames[pattern.ChannelType]}, Location={pattern.Name}:{n:X2})";
         }
 
         private bool IsVolumeSlideEffect(RowFxData fx)
@@ -610,7 +614,7 @@ namespace FamiStudio
 
                             if (fx.fx == Effect_Arpeggio)
                             {
-                                if (note == null)
+                                if (note == null && lastNoteInstrument != null && Note.IsMusicalNote(lastNoteValue))
                                 {
                                     note = pattern.GetOrCreateNoteAt(n);
                                     note.Value = lastNoteValue;
@@ -623,7 +627,7 @@ namespace FamiStudio
                             }
                         }
 
-                        if (note != null)
+                        if (note != null && note.IsMusical)
                         {
                             note.Arpeggio = currentArpeggio;
                         }
@@ -1202,7 +1206,7 @@ namespace FamiStudio
                     var env = inst.Envelopes[i];
                     if (env != null && !env.ValuesInValidRange(inst, i))
                     {
-                        Log.LogMessage(LogSeverity.Warning, $"Envelope '{EnvelopeType.Names[i]}' of instrument '{inst.Name}' have values outside of the supported range, clamping.");
+                        Log.LogMessage(LogSeverity.Warning, $"Envelope '{EnvelopeType.LocalizedNames[i]}' of instrument '{inst.Name}' have values outside of the supported range, clamping.");
                         env.ClampToValidRange(inst, i);
                     }
                 }
@@ -1263,10 +1267,10 @@ namespace FamiStudio
                 s.RemoveUnsupportedFeatures(); // Extra security.
             }
 
-
+            project.AutoSortSongs = false;
             project.ConvertToCompoundNotes();
             project.InvalidateCumulativePatternCache();
-            project.SortEverything(false);
+            project.ConditionalSortEverything();
             project.ValidateIntegrity();
 
             PrintAdditionalWarnings();

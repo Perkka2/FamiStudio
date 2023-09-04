@@ -1,4 +1,6 @@
+using System;
 using System.Diagnostics;
+using System.Globalization;
 
 namespace FamiStudio
 {
@@ -14,7 +16,7 @@ namespace FamiStudio
             set { multiline = value; MarkDirty(); }
         }
 
-        public Label(Dialog dlg, string txt, bool multi = false) : base(dlg)
+        public Label(string txt, bool multi = false)
         {
             text = txt;
             height = DpiScaling.ScaleForWindow(24);
@@ -24,7 +26,7 @@ namespace FamiStudio
         public void AutosizeWidth()
         {
             Debug.Assert(!multiline);
-            width = FontResources.FontMedium.MeasureString(text, false);
+            width = Fonts.FontMedium.MeasureString(text, false);
         }
 
         public void AdjustHeightForMultiline()
@@ -38,13 +40,25 @@ namespace FamiStudio
 
                 while (true)
                 {
-                    var n = FontResources.FontMedium.GetNumCharactersForSize(input, actualWidth);
+                    var numCharsWeCanFit = Fonts.FontMedium.GetNumCharactersForSize(input, actualWidth);
+                    var minimunCharsPerLine = Math.Max((int)(numCharsWeCanFit * 0.62), numCharsWeCanFit - 20);
+                    var n = numCharsWeCanFit;
                     var done = n == input.Length;
                     
                     if (!done)
                     {
-                        while (!char.IsWhiteSpace(input[n]))
+                        while (!char.IsWhiteSpace(input[n]) && input[n] != '\u201C' && char.GetUnicodeCategory(input[n]) != UnicodeCategory.OpenPunctuation)
+                        {
                             n--;
+                            // No whitespace or punctuation found, let's chop in the middle of a word.
+                            if (n <= minimunCharsPerLine)
+                            {
+                                n = numCharsWeCanFit;
+                                if (char.IsPunctuation(input[n]))
+                                    n--;
+                                break;
+                            }
+                        }
                     }
 
                     output += input.Substring(0, n);
@@ -67,7 +81,7 @@ namespace FamiStudio
 
                 text = output;
 
-                Resize(width, FontResources.FontMedium.LineHeight * numLines);
+                Resize(width, Fonts.FontMedium.LineHeight * numLines);
             }
         }
 
@@ -79,17 +93,17 @@ namespace FamiStudio
 
         public int MeasureWidth()
         {
-            return FontResources.FontMedium.MeasureString(text, false);
+            return Fonts.FontMedium.MeasureString(text, false);
         }
 
-        protected override void OnAddedToDialog()
+        protected override void OnAddedToContainer()
         {
             AdjustHeightForMultiline();
         }
 
         protected override void OnRender(Graphics g)
         {
-            var c = parentDialog.CommandList;
+            var c = g.GetCommandList();
             var brush = enabled ? Theme.LightGreyColor1 : Theme.MediumGreyColor1;
 
             if (multiline)
@@ -98,12 +112,12 @@ namespace FamiStudio
 
                 for (int i = 0; i < lines.Length; i++)
                 {
-                    c.DrawText(lines[i], FontResources.FontMedium, labelOffsetX, i * FontResources.FontMedium.LineHeight, brush, TextFlags.TopLeft, 0, height);
+                    c.DrawText(lines[i], Fonts.FontMedium, labelOffsetX, i * Fonts.FontMedium.LineHeight, brush, TextFlags.TopLeft, 0, height);
                 }
             }
             else
             {
-                c.DrawText(text, FontResources.FontMedium, labelOffsetX, 0, brush, TextFlags.MiddleLeft, 0, height);
+                c.DrawText(text, Fonts.FontMedium, labelOffsetX, 0, brush, TextFlags.MiddleLeft, 0, height);
             }
         }
     }

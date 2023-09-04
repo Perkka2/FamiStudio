@@ -91,7 +91,7 @@ namespace FamiStudio
         }
     }
 
-    [Activity(Theme = "@style/AppTheme.NoActionBar", ResizeableActivity = false, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize, ScreenOrientation = ScreenOrientation.Behind)]
+    [Activity(Theme = "@style/AppTheme.NoActionBar", ResizeableActivity = false, ConfigurationChanges = ConfigChanges.Orientation | ConfigChanges.ScreenSize | ConfigChanges.ScreenLayout | ConfigChanges.SmallestScreenSize | ConfigChanges.UiMode | ConfigChanges.Keyboard | ConfigChanges.KeyboardHidden, ScreenOrientation = ScreenOrientation.Behind)]
     public class MultiPropertyDialogActivity : AppCompatActivity, View.IOnClickListener
     {
         private const int FragmentViewId  = 1008;
@@ -311,7 +311,7 @@ namespace FamiStudio
 
                     var imageView = new ImageView(container.Context);
                     imageView.LayoutParameters = new LinearLayout.LayoutParams(dp36, dp36);
-                    imageView.SetImageBitmap(DroidUtils.LoadTgaBitmapFromResource($"FamiStudio.Resources.{tab.image}@2x.tga"));
+                    imageView.SetImageBitmap(DroidUtils.LoadTgaBitmapFromResource($"FamiStudio.Resources.Atlas.{tab.image}@2x.tga"));
                     imageView.SetColorFilter(BlendModeColorFilterCompat.CreateBlendModeColorFilterCompat(DroidUtils.GetColorFromResources(container.Context, Resource.Color.LightGreyColor1), BlendModeCompat.SrcAtop));
 
                     var textViewLayoutParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MatchParent, ViewGroup.LayoutParams.WrapContent);

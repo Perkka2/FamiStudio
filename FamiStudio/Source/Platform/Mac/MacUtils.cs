@@ -172,6 +172,7 @@ namespace FamiStudio
         static IntPtr clsNSApplication;
         static IntPtr clsNSMenu;
         static IntPtr clsNSMenuItem;
+        static IntPtr clsNSSound;
 
         static IntPtr selAlloc = SelRegisterName("alloc");
         static IntPtr selLength = SelRegisterName("length");
@@ -217,9 +218,12 @@ namespace FamiStudio
         static IntPtr selSetSubmenu = SelRegisterName("setSubmenu:");
         static IntPtr selSetMainMenu = SelRegisterName("setMainMenu:");
         static IntPtr selDoubleClickInterval = SelRegisterName("doubleClickInterval");
+        static IntPtr selBeep = SelRegisterName("beep");
 
         static IntPtr famiStudioPasteboard;
         static float  doubleClickInterval = 0.25f;
+        static EventDelegate eventDelegate;
+        static string lastOpenedDocument;
 
         public static IntPtr FoundationLibrary => foundationLib;
         public static IntPtr NSApplication => nsApplication;
@@ -242,14 +246,14 @@ namespace FamiStudio
             clsNSApplication = GetClass("NSApplication");
             clsNSMenu = GetClass("NSMenu");
             clsNSMenuItem = GetClass("NSMenuItem");
-
-            nsApplication = SendIntPtr(clsNSApplication, selSharedApplication);
+            clsNSSound = GetClass("NSSound");
 
             CarbonEventTypeSpec eventType;
             eventType.EventClass = EventClassAppleEvent;
             eventType.EventKind = EventOpenDocuments;
 
-            InstallEventHandler(GetApplicationEventTarget(), HandleOpenDocuments, 1, new CarbonEventTypeSpec[] { eventType }, IntPtr.Zero, out _);
+            eventDelegate = new EventDelegate(HandleOpenDocuments);
+            InstallEventHandler(GetApplicationEventTarget(), eventDelegate, 1, new CarbonEventTypeSpec[] { eventType }, IntPtr.Zero, out _);
 
             doubleClickInterval = (float)SendFloat(clsNSEvent, selDoubleClickInterval);
             famiStudioPasteboard = SendIntPtr(clsNSPasteboard, selPasteboardWithName, ToNSString("FamiStudio"));
@@ -259,6 +263,11 @@ namespace FamiStudio
         {
             nsWindow = nsWin;
 
+            // Calling this before creating the window creates a ton of issues. It prevents
+            // the app from restoring once minimized, and may also break our ability to debug 
+            // correctly.
+            nsApplication = SendIntPtr(clsNSApplication, selSharedApplication); 
+            
             CreateMenu();
         }
         
@@ -580,6 +589,11 @@ namespace FamiStudio
             }
         }
 
+        public static void Beep()
+        {
+            NSBeep();
+        }
+
         public static unsafe void SetPasteboardData(byte[] data)
         {
             var pbTypes = ToNSArray(new[] { "FamiStudioData" });
@@ -752,6 +766,11 @@ namespace FamiStudio
             return null;
         }
 
+        public static string GetInitialOpenDocument()
+        {
+            return lastOpenedDocument;
+        }
+
         static int HandleOpenDocuments(IntPtr callRef, IntPtr eventRef, IntPtr user_data)
         {
             try
@@ -762,6 +781,7 @@ namespace FamiStudio
                 {
                     foreach (var kv in docs)
                     {
+                        lastOpenedDocument = kv.Key;
                         FileOpen?.Invoke(kv.Key);
                         break;
                     }

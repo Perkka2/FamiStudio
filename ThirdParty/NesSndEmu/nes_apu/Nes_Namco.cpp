@@ -32,9 +32,10 @@ void Nes_Namco::reset()
 	addr_reg = 0;
 	active_osc = osc_count - 1;
 	delay = 0;
-	last_amp = 0;
+	last_amp = 120;
 	last_time = 0;
-	
+	mix = true;
+
 	int i;
 	for ( i = 0; i < reg_count; i++ )
 	{
@@ -117,7 +118,9 @@ void Nes_Namco::run_until(cpu_time_t end_time)
 			if (addr & 1)
 				sample >>= 4;
 
-			osc.sample = (sample & 15) * volume;
+			// From wiki : The sample value is biased by -8, meaning that a waveform value of 8 represents the centre voltage. 
+			// This means that volume changes have no effect on a sample of 8, will tend negative if <8 and positive if >8. 
+			osc.sample = ((sample & 15) - 8) * volume;
 
 			osc_reg[5] = (phase >> 16) & 0xff;
 			osc_reg[3] = (phase >>  8) & 0xff;
@@ -132,16 +135,28 @@ void Nes_Namco::run_until(cpu_time_t end_time)
 			osc.trigger = trigger_none;
 		}
 
-		float sum = 0.0f;
-		for (int i = osc_count - active_oscs; i < osc_count; i++)
-			sum += oscs[i].sample;
-		int sample = (int)(sum / min(6, max(1, active_oscs)) + 0.5f); 
+		int output;
+
+		if (mix)
+		{
+			float sum = 0.0f;
+			for (int i = osc_count - active_oscs; i < osc_count; i++)
+				sum += oscs[i].sample;
+			output = (int)(sum / max(1, active_oscs) + 0.5f);
+		}
+		else
+		{
+			output = osc.sample;
+		}
+
+		// Re-add bias * max volume because we only deal with positive values here (0...225).
+		output += (8 * 15);
 
 		// output impulse if amplitude changed
-		int delta = sample - last_amp;
+		int delta = output - last_amp;
 		if (delta)
 		{
-			last_amp = sample;
+			last_amp = output;
 			synth.offset(time, delta, buffer);
 		}
 
