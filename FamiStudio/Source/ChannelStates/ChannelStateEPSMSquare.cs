@@ -34,11 +34,11 @@ namespace FamiStudio
                 var periodHi = (period >> 8) & 0x0f;
                 var periodLo = (period >> 0) & 0xff;
                 var noiseFreq = envelopeValues[EnvelopeType.YMNoiseFreq];
-                player.NotifyYMMixerSettingsChanged(
+                /*player.NotifyYMMixerSettingsChanged(
                     ((toneReg & mask) | ((((envelopeValues[EnvelopeType.YMMixerSettings] & 0x1) | ((envelopeValues[EnvelopeType.YMMixerSettings] & 0x2) << 2))) << channelIdx)),
                     (1L << ChannelType.EPSMSquare1) |
                     (1L << ChannelType.EPSMSquare2) |
-                    (1L << ChannelType.EPSMSquare3));
+                    (1L << ChannelType.EPSMSquare3));*/
                 WriteRegister(NesApu.EPSM_ADDR0, NesApu.EPSM_REG_MIXER_SETTING);
                 WriteRegister(NesApu.EPSM_DATA0, toneReg);
                 if (noiseFreq > 0)

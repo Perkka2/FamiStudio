@@ -934,7 +934,7 @@ namespace FamiStudio
 
                 var hasOctave  = channel.IsVrc7Channel || channel.IsEPSMFmChannel;
                 var hasVolume  = channel.Type != ChannelType.Triangle;
-                var hasPitch   = channel.Type != ChannelType.Noise && !channel.IsEPSMRythmChannel;
+                var hasPitch   = channel.Type != ChannelType.Noise /*&& !channel.IsEPSMRythmChannel*/;
                 var hasDuty    = channel.Type == ChannelType.Square1 || channel.Type == ChannelType.Square2 || channel.Type == ChannelType.Noise || channel.Type == ChannelType.Vrc6Square1 || channel.Type == ChannelType.Vrc6Square2 || channel.Type == ChannelType.Mmc5Square1 || channel.Type == ChannelType.Mmc5Square2;
                 var hasTrigger = channel.IsVrc7Channel;
 
@@ -970,7 +970,7 @@ namespace FamiStudio
                     state.fmTrigger = trigger;
                     state.fmSustain = sustain;
                 }
-                else if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm6)
+                else if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm3)
                 {
                     var trigger = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_FMTRIGGER, 0) != 0;
                     var sustain = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_FMSUSTAIN, 0) > 0;
@@ -1092,22 +1092,22 @@ namespace FamiStudio
                     mixer = (mixer & 0x1) + ((mixer & 0x8) >> 2);
                     instrument = GetS5BInstrument(noise,mixer);
                 }
-                else if (channel.Type >= ChannelType.EPSMSquare1 && channel.Type <= ChannelType.EPSMrythm6)
+                else if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm3)
                 {
                     var regs = new byte[31];
                     Array.Clear(regs, 0, regs.Length);
-                    if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm6)
+                    if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm3)
                     {
                         for (int i = 0; i < 31; i++)
                             regs[i] = (byte)NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_FMPATCHREG, i);
 
                         instrument = GetEPSMInstrument(1, regs,0,0);
                     }
-                    else if (channel.Type >= ChannelType.EPSMrythm1 && channel.Type <= ChannelType.EPSMrythm6)
+                    /*else if (channel.Type >= ChannelType.EPSMrythm1 && channel.Type <= ChannelType.EPSMrythm6)
                     {
                         regs[1] = (byte)NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_STEREO, 0);
                         instrument = GetEPSMInstrument(2, regs,0,0); 
-                    }
+                    }*/
                     else
                     {
                         var noise = (byte)NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_YMNOISEFREQUENCY, 0);

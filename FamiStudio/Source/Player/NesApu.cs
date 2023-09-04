@@ -721,9 +721,9 @@ namespace FamiStudio
                 case ChannelType.Vrc6Saw:
                 case ChannelType.Vrc6Square1:
                 case ChannelType.Vrc6Square2:
-                case ChannelType.EPSMSquare1:
+                /*case ChannelType.EPSMSquare1:
                 case ChannelType.EPSMSquare2:
-                case ChannelType.EPSMSquare3:
+                case ChannelType.EPSMSquare3:*/
                 case ChannelType.S5BSquare1:
                 case ChannelType.S5BSquare2:
                 case ChannelType.S5BSquare3:

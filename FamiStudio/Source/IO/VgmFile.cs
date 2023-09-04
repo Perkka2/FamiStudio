@@ -926,7 +926,7 @@ namespace FamiStudio
                         break;
                     }
 
-                case ChannelType.EPSMrythm1:
+                /*case ChannelType.EPSMrythm1:
                 case ChannelType.EPSMrythm2:
                 case ChannelType.EPSMrythm3:
                 case ChannelType.EPSMrythm4:
@@ -958,13 +958,13 @@ namespace FamiStudio
                             case NotSoFatso.STATE_YMNOISEFREQUENCY: return epsmRegisterLo[6];
                         }
                         break;
-                    }
+                    }*/
                 case ChannelType.EPSMFm1:
                 case ChannelType.EPSMFm2:
                 case ChannelType.EPSMFm3:
-                case ChannelType.EPSMFm4:
+                /*case ChannelType.EPSMFm4:
                 case ChannelType.EPSMFm5:
-                case ChannelType.EPSMFm6:
+                case ChannelType.EPSMFm6:*/
                     {
                         int idx = channel - ChannelType.EPSMFm1;
                         switch (state)
@@ -1141,7 +1141,7 @@ namespace FamiStudio
 
                 var hasOctave = channel.IsVrc7Channel || channel.IsEPSMFmChannel;
                 var hasVolume = channel.Type != ChannelType.Triangle;
-                var hasPitch = channel.Type != ChannelType.Noise && !channel.IsEPSMRythmChannel;
+                var hasPitch = channel.Type != ChannelType.Noise /*&& !channel.IsEPSMRythmChannel*/;
                 var hasDuty = channel.Type == ChannelType.Square1 || channel.Type == ChannelType.Square2 || channel.Type == ChannelType.Noise ||  channel.Type == ChannelType.Mmc5Square1 || channel.Type == ChannelType.Mmc5Square2;
                 var hasTrigger = channel.IsVrc7Channel;
 
@@ -1177,7 +1177,7 @@ namespace FamiStudio
                     state.fmTrigger = trigger;
                     state.fmSustain = sustain;
                 }
-                else if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm6)
+                else if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm3)
                 {
                     var trigger = GetState(channel.Type, NotSoFatso.STATE_FMTRIGGER, 0) != 0;
                     var sustain = GetState(channel.Type, NotSoFatso.STATE_FMSUSTAIN, 0) > 0;
@@ -1282,22 +1282,22 @@ namespace FamiStudio
                     mixer = (mixer & 0x1) + ((mixer & 0x8) >> 2);
                     instrument = GetS5BInstrument(noise, mixer);
                 }
-                else if (channel.Type >= ChannelType.EPSMSquare1 && channel.Type <= ChannelType.EPSMrythm6)
+                else if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm3)
                 {
                     var regs = new byte[31];
                     Array.Clear(regs, 0, regs.Length);
-                    if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm6)
+                    if (channel.Type >= ChannelType.EPSMFm1 && channel.Type <= ChannelType.EPSMFm3)
                     {
                         for (int i = 0; i < 31; i++)
                             regs[i] = (byte)GetState(channel.Type, NotSoFatso.STATE_FMPATCHREG, i);
 
                         instrument = GetEPSMInstrument(1, regs, 0, 0);
                     }
-                    else if (channel.Type >= ChannelType.EPSMrythm1 && channel.Type <= ChannelType.EPSMrythm6)
+                    /*else if (channel.Type >= ChannelType.EPSMrythm1 && channel.Type <= ChannelType.EPSMrythm6)
                     {
                         regs[1] = (byte)GetState(channel.Type, NotSoFatso.STATE_STEREO, 0);
                         instrument = GetEPSMInstrument(2, regs, 0, 0);
-                    }
+                    }*/
                     else
                     {
                         var noise = (byte)Utils.Clamp((GetState(channel.Type, NotSoFatso.STATE_YMNOISEFREQUENCY, 0) & 0x1f) / clockMultiplier[channel.Expansion], 1, 31);
@@ -1314,10 +1314,10 @@ namespace FamiStudio
 
                 if(channel.IsEPSMFmChannel || channel.IsVrc7Channel)
                     period = (int)(period * clockMultiplier[channel.Expansion]);
-                else if(!channel.IsEPSMRythmChannel)
+                /*else if(!channel.IsEPSMRythmChannel)
                     period = (int)(period / clockMultiplier[channel.Expansion]);
                 if(ym2149AsEPSM && channel.IsEPSMSquareChannel)
-                    period = (int)(period / clockMultiplier[ExpansionType.S5B]);
+                    period = (int)(period / clockMultiplier[ExpansionType.S5B]);*/
 
                 if ((state.period != period) || (hasOctave && state.octave != octave) || (instrument != state.instrument) || force)
                 {

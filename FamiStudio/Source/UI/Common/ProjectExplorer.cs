@@ -803,7 +803,7 @@ namespace FamiStudio
                 {
                     var c = j; // Important, need to make a copy for the lambda.
                     if (j < 3){
-                        Labels[j] = ChannelType.LocalizedNames[ChannelType.EPSMSquare1+j];
+                        /*Labels[j] = ChannelType.LocalizedNames[ChannelType.EPSMSquare1+j];
                         Icons[j] = IconSquare;
                         ChannelRows[c] = new[]
                         {
@@ -812,10 +812,10 @@ namespace FamiStudio
                             new RegisterViewerRow(EnvelopeLabel, () => i.GetEnvelopeEnabled(c) ? EnvelopeEnabledLabel : EnvelopeDisabledLabel, true),
                             new RegisterViewerRow(PitchLabel, () => GetPitchString(i.GetPeriod(c), i.GetFrequency(c)), true),
                             new RegisterViewerRow(VolumeLabel, () => i.GetVolume(c).ToString("00"), true),
-                        };
+                        };*/
                     }
-                    if (j >= 4 && j < 10){
-                        Labels[j] = ChannelType.LocalizedNames[ChannelType.EPSMSquare1+j-1];
+                    if (j >= 4 && j < 7){
+                        Labels[j] = ChannelType.LocalizedNames[ChannelType.EPSMFm1 + j-4];
                         Icons[j] = IconFM;
                         ChannelRows[c] = new[]
                         {
@@ -828,13 +828,13 @@ namespace FamiStudio
                         };
                     }
                     if (j >= 10){
-                        Labels[j] = ChannelType.LocalizedNames[ChannelType.EPSMSquare1+j-1];
+                        /*Labels[j] = ChannelType.LocalizedNames[ChannelType.EPSMSquare1+j-1];
                         Icons[j] = IconRhythm;
                         ChannelRows[c] = new[]
                         {
                             new RegisterViewerRow(StereoLabel, () => i.GetStereo(c-1), true),
                             new RegisterViewerRow(VolumeLabel, () => i.GetVolume(c-1).ToString("00"), true),
-                        };
+                        };*/
                     }
                 }
                 Labels[3] = NoiseLabel.ToString();
