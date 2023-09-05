@@ -1358,6 +1358,9 @@ loop:
 
 draw:
 
+@wait: 
+bit $2002
+bmi @wait
 lda #$1f
 sta $2001
     jsr famistudio_update ; TODO: Call in NMI.
