@@ -1749,11 +1749,14 @@ namespace FamiStudio
                     vgmDataOffset = vgmDataOffset + 5;
                 else
                     vgmDataOffset = vgmDataOffset + 3;
-                if (!(vgmFile.Length > vgmDataOffset))
+                if (vgmFile.Length > vgmDataOffset)
+                    vgmCommand = vgmFile[vgmDataOffset];
+                else
                     break;
             }
 
             vgmDataOffset = BitConverter.ToInt32(vgmFile.AsSpan(0x34, 4)) + 0x34;
+            vgmCommand = vgmFile[vgmDataOffset];
             while (vgmDataOffset < vgmFile.Length)
             {
                 if (expansionMask != project.ExpansionAudioMask)
