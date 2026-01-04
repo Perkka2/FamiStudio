@@ -70,6 +70,9 @@ namespace FamiStudio
         [DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
         public extern static IntPtr SendIntPtr(IntPtr receiver, IntPtr selector, uint uint1, IntPtr intPtr1, IntPtr intPtr2, bool bool1);
 
+        [DllImport("/usr/lib/libobjc.dylib", EntryPoint = "objc_msgSend")]
+        public extern static NSSize SendNSSize(IntPtr receiver, IntPtr selector);
+
         [DllImport("/usr/lib/libobjc.dylib", EntryPoint = "class_replaceMethod")]
         public static extern void ClassReplaceMethod(IntPtr classHandle, IntPtr selector, IntPtr method, string types);
 
@@ -151,6 +154,13 @@ namespace FamiStudio
             public int element;
             public int scope;
             public int selector;
+        }
+
+        [StructLayout(LayoutKind.Sequential, Pack = 4)]
+        public struct NSSize
+        {
+            public double Width;
+            public double Height;
         }
 
         const int kAudioHardwarePropertyDefaultOutputDevice = 1682929012; // 'dOut'
@@ -239,6 +249,8 @@ namespace FamiStudio
         static IntPtr selSetMainMenu = SelRegisterName("setMainMenu:");
         static IntPtr selDoubleClickInterval = SelRegisterName("doubleClickInterval");
         static IntPtr selBeep = SelRegisterName("beep");
+        static IntPtr selImage = SelRegisterName("image");
+        static IntPtr selSize = SelRegisterName("size");
 
         static IntPtr famiStudioPasteboard;
         static float  doubleClickInterval = 0.25f;
@@ -455,6 +467,13 @@ namespace FamiStudio
             }
 
             return items;
+        }
+
+        public static int GetCursorSize(IntPtr cursor)
+        {
+            var img = SendIntPtr(cursor, selImage);
+            var size = SendNSSize(img, selSize);
+            return (int)size.Width;
         }
 
         public static IntPtr GetCursorByName(string name)

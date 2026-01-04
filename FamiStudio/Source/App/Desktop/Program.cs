@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 using static FamiStudio.Init;
-using static GLFWDotNet.GLFW;
 
 namespace FamiStudio
 {
@@ -13,7 +9,7 @@ namespace FamiStudio
         static void WaitForDebugger()
         {
         #if DEBUG && WAIT_FOR_DEBUGGER
-            for (int i = 10; i >= 0 && !Debugger.IsAttached; i--)
+            for (var i = 20; i >= 0 && !Debugger.IsAttached; i--)
             {
                 Debug.WriteLine("Waiting {i} seconds for debugger to attach ...");
                 System.Threading.Thread.Sleep(1000);
