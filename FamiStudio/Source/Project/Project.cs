@@ -3120,7 +3120,7 @@ namespace FamiStudio
         }
     }
 
-    public class MusicCodeExportConfig()
+    public class MusicCodeExportConfig
     {
         private int format = AssemblyFormat.CA65;
         private bool separate;
@@ -3161,7 +3161,7 @@ namespace FamiStudio
         }
     }
 
-    public class SfxExportConfig()
+    public class SfxExportConfig
     {
         private int  format = AssemblyFormat.CA65;
         private int  mode   = -1; // Unset.
