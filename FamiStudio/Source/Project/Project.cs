@@ -32,7 +32,7 @@ namespace FamiStudio
         // Version 19 = FamiStudio 4.5.0 (VRC7 release override option, groove padding serialization)
         public const int Version = 19;
         public const int MaxMappedSampleSize = 0x40000;
-        public const int MaxDPCMBanks = 64; 
+        public const int MaxDPCMBanks = 64;
         public const int MaxSampleAddress = 255 * 64;
 
         private List<DPCMSample> samples = new List<DPCMSample>();
@@ -70,6 +70,20 @@ namespace FamiStudio
         //  - In FamiTracker mode, it means the last playback mode was PAL
         private bool pal = false;
 
+        // Export settings.
+        private AudioExportConfig audioExportConfig = new();
+        private VideoExportConfig videoExportConfig = new();
+        private NsfExportConfig nsfExportConfig = new();
+        private RomFdsExportConfig romFdsExportConfig = new();
+        private MidiExportConfig midiExportConfig = new();
+        private VgmExportConfig vgmExportConfig = new();
+        private FamiStudioTextExportConfig famiStudioTextExportConfig = new();
+        private FamiTrackerTextExportConfig famiTrackerTextExportConfig = new();
+        private MusicCodeExportConfig famiStudioMusicExportConfig = new();
+        private SfxExportConfig famiStudioSfxExportConfig = new();
+        private MusicCodeExportConfig famiTone2MusicExportConfig = new();
+        private SfxExportConfig famiTone2SfxExportConfig = new();
+
         public List<DPCMSample> Samples => samples;
         public List<Instrument> Instruments => instruments;
         public List<Song> Songs => songs;
@@ -95,7 +109,7 @@ namespace FamiStudio
         public bool UsesMmc5Expansion  => (expansionMask & ExpansionType.Mmc5Mask) != 0;
         public bool UsesS5BExpansion   => (expansionMask & ExpansionType.S5BMask) != 0;
         public bool UsesEPSMExpansion  => (expansionMask & ExpansionType.EPSMMask) != 0;
-        
+
         public bool OutputsStereoAudio => UsesEPSMExpansion;
         public bool HasAnyFolders => folders.Count > 0;
 
@@ -113,6 +127,19 @@ namespace FamiStudio
         public int  BassCutoffHz         { get => bassCutoffHz;         set => bassCutoffHz         = value; }
 
         public ExpansionMixer[] ExpansionMixerSettings => mixerSettings;
+
+        public AudioExportConfig AudioExportConfig => audioExportConfig;
+        public VideoExportConfig VideoExportConfig => videoExportConfig;
+        public NsfExportConfig NsfExportConfig => nsfExportConfig;
+        public RomFdsExportConfig RomFdsExportConfig => romFdsExportConfig;
+        public MidiExportConfig MidiExportConfig => midiExportConfig;
+        public VgmExportConfig VgmExportConfig => vgmExportConfig;
+        public FamiStudioTextExportConfig FamiStudioTextExportConfig => famiStudioTextExportConfig;
+        public FamiTrackerTextExportConfig FamiTrackerTextExportConfig => famiTrackerTextExportConfig;
+        public MusicCodeExportConfig FamiStudioMusicExportConfig => famiStudioMusicExportConfig;
+        public SfxExportConfig FamiStudioSfxExportConfig => famiStudioSfxExportConfig;
+        public MusicCodeExportConfig FamiTone2MusicExportConfig => famiTone2MusicExportConfig;
+        public SfxExportConfig FamiTone2SfxExportConfig => famiTone2SfxExportConfig;
 
         public Project(bool createSongAndInstrument = false)
         {
@@ -790,7 +817,7 @@ namespace FamiStudio
 
         public void SortInstruments()
         {
-            instruments.Sort((i1, i2) => 
+            instruments.Sort((i1, i2) =>
             {
                 var expComp = i1.Expansion.CompareTo(i2.Expansion);
 
@@ -1079,7 +1106,7 @@ namespace FamiStudio
 
             if (ChannelType.GetExpansionTypeForChannelType(channelType) == ExpansionType.EPSM)
                 return (expansionMask & ExpansionType.EPSMMask) != 0;
-				
+
             Debug.Assert(false);
 
             return false;
@@ -1098,7 +1125,7 @@ namespace FamiStudio
                 return false;
             }
         }
-        
+
         public bool UsesSamples
         {
             get
@@ -1207,7 +1234,7 @@ namespace FamiStudio
 
         private void EnsureFolderExist(int type, string name)
         {
-            if (string.IsNullOrEmpty(name)) 
+            if (string.IsNullOrEmpty(name))
                 return;
             CreateFolder(type, name);
         }
@@ -1265,16 +1292,16 @@ namespace FamiStudio
             switch (type)
             {
                 case FolderType.Song:
-                    ConditionalSortSongs(); 
+                    ConditionalSortSongs();
                     break;
-                case FolderType.Instrument: 
-                    ConditionalSortInstruments(); 
+                case FolderType.Instrument:
+                    ConditionalSortInstruments();
                     break;
-                case FolderType.Sample:     
-                    ConditionalSortSamples(); 
+                case FolderType.Sample:
+                    ConditionalSortSamples();
                     break;
-                case FolderType.Arpeggio:  
-                    ConditionalSortArpeggios(); 
+                case FolderType.Arpeggio:
+                    ConditionalSortArpeggios();
                     break;
             }
         }
@@ -1406,7 +1433,7 @@ namespace FamiStudio
                     bestNumBanks = seedNumBanks;
                     bestSeed = k;
                 }
-                
+
                 if (seedNumBanks == optimalNumberOfBanks)
                 {
                     // If optimal size, favor tries that put more samples in first banks.
@@ -1414,7 +1441,7 @@ namespace FamiStudio
 
                     for (int i = 0; i < seedNumBanks - 1; i++)
                         sizeFirstBanks += GetBankSize(i);
-                    
+
                     if (sizeFirstBanks > bestSizeFirstBanks)
                     {
                         bestSizeFirstBanks = sizeFirstBanks;
@@ -1455,7 +1482,7 @@ namespace FamiStudio
         {
             var samplesInSameBank = GetSamplesInBank(sample.Bank);
             var offset = 0;
-            
+
             for (int i = 0; i < samplesInSameBank.Count; i++)
             {
                 var s = samplesInSameBank[i];
@@ -1571,7 +1598,7 @@ namespace FamiStudio
             }
 
             // Purely to pass validation.
-            otherProject.EnsureNextIdIsLargeEnough(); 
+            otherProject.EnsureNextIdIsLargeEnough();
             otherProject.ValidateIntegrity();
 
             if (otherProject.Songs.Count > 0)
@@ -1636,7 +1663,7 @@ namespace FamiStudio
                 {
                     var otherInstrument = otherProject.instruments[i];
                     if (otherInstrument.Expansion == ExpansionType.None || (expansionMask & ExpansionType.GetMaskFromValue(otherInstrument.Expansion)) != 0)
-                    { 
+                    {
                         var existingInstrument = GetInstrument(otherInstrument.Name);
                         if (existingInstrument != null)
                         {
@@ -1668,7 +1695,7 @@ namespace FamiStudio
                                 instruments.Add(otherInstrument);
                             }
                         }
-                        else 
+                        else
                         {
                             otherInstrument.SetProject(this);
                             instruments.Add(otherInstrument);
@@ -1984,10 +2011,10 @@ namespace FamiStudio
                 return true;
             }
 
-            // HACK : Last minute hack, when exporting we spawn multiple WavPlayer threads and 
+            // HACK : Last minute hack, when exporting we spawn multiple WavPlayer threads and
             // those may end up all in this functions.
             lock (this)
-            { 
+            {
                 var numN163Instruments = instruments.Count(i => i.IsN163);
                 var numN163AutoPos = instruments.Count(i => i.IsN163 && i.N163WaveAutoPos);
 
@@ -2002,7 +2029,7 @@ namespace FamiStudio
                 const int numBitsPerLong = sizeof(ulong) * 8;
 
                 var instrumentOverlaps = new Dictionary<Instrument, HashSet<Instrument>>(numN163AutoPos);
-            
+
                 foreach (var song in songs)
                 {
                     var numFrames = song.EndLocation.ToAbsoluteNoteIndex(song);
@@ -2296,10 +2323,70 @@ namespace FamiStudio
         {
             return samples.FindAll(s => (name ?? "") == (s.FolderName ?? ""));
         }
-        
+
         public void ExpandAllFolders(int type, bool expand)
         {
             folders.ForEach(f => { if (f.Type == type) f.Expanded = expand; });
+        }
+
+        public void ResetAudioExportSettings()
+        {
+            this.audioExportConfig = new AudioExportConfig();
+        }
+
+        public void ResetVideoExportSettings()
+        {
+            this.videoExportConfig = new VideoExportConfig();
+        }
+
+        public void ResetNsfExportSettings()
+        {
+            this.nsfExportConfig = new NsfExportConfig();
+        }
+
+        public void ResetRomFdsExportSettings()
+        {
+            this.romFdsExportConfig = new RomFdsExportConfig();
+        }
+
+        public void ResetMidiExportSettings()
+        {
+            this.midiExportConfig = new MidiExportConfig();
+        }
+
+        public void ResetVgmExportSettings()
+        {
+            this.vgmExportConfig = new VgmExportConfig();
+        }
+
+        public void ResetFamiStudioTextExportSettings()
+        {
+            this.famiStudioTextExportConfig = new FamiStudioTextExportConfig();
+        }
+
+        public void ResetFamiTrackerTextExportSettings()
+        {
+            this.famiTrackerTextExportConfig = new FamiTrackerTextExportConfig();
+        }
+
+        public void ResetFamiStudioMusicCodeExportSettings()
+        {
+            this.famiStudioMusicExportConfig = new MusicCodeExportConfig();
+        }
+
+        public void ResetFamiStudioSfxCodeExportSettings()
+        {
+            this.famiStudioSfxExportConfig = new SfxExportConfig();
+        }
+
+        public void ResetFamiTone2MusicCodeExportSettings()
+        {
+            this.famiTone2MusicExportConfig = new MusicCodeExportConfig();
+        }
+
+        public void ResetFamiTone2SfxCodeExportSettings()
+        {
+            this.famiTone2SfxExportConfig = new SfxExportConfig();
         }
 
         public void SerializeDPCMSamples(ProjectBuffer buffer)
@@ -2419,7 +2506,7 @@ namespace FamiStudio
             else if (buffer.Version >= 10)
             {
                 // At version 10 (FamiStudio 3.0.0) we allowed song re-ordering, do not assume sorting.
-                sortSongs = false; 
+                sortSongs = false;
             }
 
             // At version 2 (FamiStudio 1.1.0) we added project properties
@@ -2460,6 +2547,23 @@ namespace FamiStudio
             if (buffer.Version >= 6)
             {
                 buffer.Serialize(ref pal);
+            }
+
+            // At version 19 (FamiStudio 4.5.0), we added saving project export settings.
+            if (buffer.Version >= 19)
+            {
+                audioExportConfig.Serialize(buffer);
+                videoExportConfig.Serialize(buffer);
+                nsfExportConfig.Serialize(buffer);
+                romFdsExportConfig.Serialize(buffer);
+                midiExportConfig.Serialize(buffer);
+                vgmExportConfig.Serialize(buffer);
+                famiStudioTextExportConfig.Serialize(buffer);
+                famiTrackerTextExportConfig.Serialize(buffer);
+                famiStudioMusicExportConfig.Serialize(buffer);
+                famiStudioSfxExportConfig.Serialize(buffer);
+                famiTone2MusicExportConfig.Serialize(buffer);
+                famiTone2SfxExportConfig.Serialize(buffer);
             }
 
             // At version 17 (FamiStudio 4.3.0) we added support for tuning frequency (ex: A = 440Hz).
@@ -2580,6 +2684,508 @@ namespace FamiStudio
             newProject.Serialize(loadSerializer);
             newProject.ValidateIntegrity();
             return newProject;
+        }
+    }
+
+    public class ChannelExportSettings
+    {
+        private int  songId;
+        private int  channelType;
+        private bool enabled;
+        private int  panning;
+        private int  transpose;
+        private int  trigger;
+
+        public int  SongId      { get => songId;      set => songId      = value; }
+        public int  ChannelType { get => channelType; set => channelType = value; }
+        public bool Enabled     { get => enabled;     set => enabled     = value; }
+        public int  Panning     { get => panning;     set => panning     = value; }
+        public int  Transpose   { get => transpose;   set => transpose   = value; }
+        public int  Trigger     { get => trigger;     set => trigger     = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref channelType);
+            buffer.Serialize(ref enabled);
+            buffer.Serialize(ref panning);
+            buffer.Serialize(ref transpose);
+            buffer.Serialize(ref trigger);
+        }
+    }
+
+    public class SongListExportSettings
+    {
+        private int  songId;
+        private bool enabled;
+
+        public int  SongId  { get => songId;  set => songId  = value; }
+        public bool Enabled { get => enabled; set => enabled = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref enabled);
+        }
+    }
+
+    public class MidiInstrumentExportSettings
+    {
+        private int songId;
+        private int mode = MidiExportInstrumentMode.Instrument;
+        private int typeId; // Instrument ID / channel type.
+        private int index;  // Index of MIDI instrument.
+
+        public int SongId { get => songId; set => songId = value; }
+        public int Mode   { get => mode;   set => mode   = value; }
+        public int TypeId { get => typeId; set => typeId = value; }
+        public int Index  { get => index;  set => index  = value; }
+
+        public int Example { get => Example; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref mode);
+            buffer.Serialize(ref typeId);
+            buffer.Serialize(ref index);
+        }
+    }
+
+    public class AudioExportConfig
+    {
+        private static readonly string[] sampleRates = new string[] { "11025", "22050", "44100", "48000" };
+        private static readonly string[] bitRates    = new string[] { "96", "112", "128", "160", "192", "224", "256" };
+
+        private int  songId     = -1; // Unset.
+        private int  format     = 0;  // WAV.
+        private int  samplerate = 2;  // 44100.
+        private int  bitRate    = 4;  // 192.
+        private int  loopMode   = 0;  // Loop N times.
+        private int  loopCount  = 1;
+        private int  duration   = 120;
+        private int  delay      = 0;
+        private bool separateFiles;
+        private bool separateIntro;
+        private bool stereo;
+
+        private List<ChannelExportSettings> channels = new List<ChannelExportSettings>(); 
+
+        public static string[] SampleRates => sampleRates;
+        public static string[] BitRates    => bitRates;
+
+        public int  SongId        { get => songId;        set => songId        = value; }
+        public int  Format        { get => format;        set => format        = value; }
+        public int  BitRate       { get => bitRate;       set => bitRate       = value; }
+        public int  SampleRate    { get => samplerate;    set => samplerate    = value; }
+        public int  LoopModeIndex { get => loopMode;      set => loopMode      = value; }
+        public int  LoopCount     { get => loopCount;     set => loopCount     = value; }
+        public int  Duration      { get => duration;      set => duration      = value; }
+        public int  Delay         { get => delay;         set => delay         = value; }
+        public bool SeparateFiles { get => separateFiles; set => separateFiles = value; }
+        public bool SeparateIntro { get => separateIntro; set => separateIntro = value; }
+        public bool Stereo        { get => stereo;        set => stereo        = value; }
+
+        public List<ChannelExportSettings> Channels { get => channels; set => channels = value; }
+
+        public AudioExportConfig()
+        {
+        }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref format);
+            buffer.Serialize(ref samplerate);
+            buffer.Serialize(ref bitRate);
+            buffer.Serialize(ref loopMode);
+            buffer.Serialize(ref loopCount);
+            buffer.Serialize(ref duration);
+            buffer.Serialize(ref delay);
+            buffer.Serialize(ref separateFiles);
+            buffer.Serialize(ref separateIntro);
+            buffer.Serialize(ref stereo);
+
+            var channelCount = channels.Count;
+            buffer.Serialize(ref channelCount);
+            buffer.InitializeList(ref channels, channelCount);
+
+            foreach (var channel in channels)
+            {
+                channel.Serialize(buffer);
+            }
+        }
+    }
+
+    public class VideoExportConfig
+    {
+        private static readonly string[] frameRates            = new[] { "50/60 FPS", "25/30 FPS" };
+        private static readonly string[] audioBitRates         = new[] { "64", "96", "112", "128", "160", "192", "224", "256", "320" };
+        private static readonly string[] videoBitRates         = new[] { "250", "500", "750", "1000", "1500", "2000", "3000", "4000", "5000", "8000", "10000", "20000", "30000" };
+        private static readonly string[] pianoRollWidths       = new[] { "Auto", "50%", "75%", "100%", "125%", "150%", "175%", "200%" };
+        private static readonly string[] pianoRollZoomLevels   = new[] { "6.25%", "12.5%", "25%", "50%", "100%", "200%", "400%", "800%" };
+        private static readonly string[] pianoRollPercpectives = new[] { "0°", "30°", "45°", "60°", "75°" };
+        
+        private int  songId                = -1; // Unset.
+        private int  mode                  = VideoMode.Oscilloscope;
+        private int  resolution            = 0; // 1080p.
+        private int  frameRate             = 0; //50/60 FPS.
+        private int  audioBitRate          = 5; // 192.
+        private int  videoBitRate          = 9; // 8000.
+        private int  loopCount             = 1;
+        private int  delay                 = 0;
+        private int  oscColumns            = -1; // Unset.
+        private int  oscWindow             = 2;
+        private int  oscThickness          = 2;
+        private int  oscColour             = OscilloscopeColorType.Instruments;
+        private int  pianoRollWidth        = 0; // Auto.
+        private int  pianoRollZoom         = -1; // Unset: 4 is 100% (FamiTracker), 2 is 25% (FamiStudio).
+        private int  pianoRollRows         = -1; // Unset.
+        private int  pianoRollPerspective  = 3; // 60 degrees.
+        private bool overlayRegisters;
+        private bool stereo;
+
+        private List<ChannelExportSettings> channels = new List<ChannelExportSettings>(); 
+
+        public static string[] FrameRates            => frameRates; 
+        public static string[] AudioBitRates         => audioBitRates;
+        public static string[] VideoBitRates         => videoBitRates;
+        public static string[] PianoRollWidths       => pianoRollWidths;
+        public static string[] PianoRollZoomLevels   => pianoRollZoomLevels;
+        public static string[] PianoRollPercpectives => pianoRollPercpectives;
+
+        public int  SongId               { get => songId;               set => songId               = value; }
+        public int  Mode                 { get => mode;                 set => mode                 = value; }
+        public int  Resolution           { get => resolution;           set => resolution           = value; }
+        public int  FrameRate            { get => frameRate;            set => frameRate            = value; }
+        public int  AudioBitRate         { get => audioBitRate;         set => audioBitRate         = value; }
+        public int  VideoBitRate         { get => videoBitRate;         set => videoBitRate         = value; }
+        public int  LoopCount            { get => loopCount;            set => loopCount            = value; }
+        public int  Delay                { get => delay;                set => delay                = value; }
+        public int  OscColumns           { get => oscColumns;           set => oscColumns           = value; }
+        public int  OscWindow            { get => oscWindow;            set => oscWindow            = value; }
+        public int  OscThickness         { get => oscThickness;         set => oscThickness         = value; }
+        public int  OscColour            { get => oscColour;            set => oscColour            = value; }
+        public int  PianoRollWidth       { get => pianoRollWidth;       set => pianoRollWidth       = value; }
+        public int  PianoRollZoom        { get => pianoRollZoom;        set => pianoRollZoom        = value; }
+        public int  PianoRollRows        { get => pianoRollRows;        set => pianoRollRows        = value; }
+        public int  PianoRollPerspective { get => pianoRollPerspective; set => pianoRollPerspective = value; }
+        public bool OverlayRegisters     { get => overlayRegisters;     set => overlayRegisters     = value; }
+        public bool Stereo               { get => stereo;               set => stereo               = value; }
+
+        public List<ChannelExportSettings> Channels { get => channels; set => channels = value; }
+
+        public VideoExportConfig()
+        {
+        }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref mode);
+            buffer.Serialize(ref resolution);
+            buffer.Serialize(ref frameRate);
+            buffer.Serialize(ref audioBitRate);
+            buffer.Serialize(ref videoBitRate);
+            buffer.Serialize(ref loopCount);
+            buffer.Serialize(ref delay);
+            buffer.Serialize(ref oscColumns);
+            buffer.Serialize(ref oscWindow);
+            buffer.Serialize(ref oscThickness);
+            buffer.Serialize(ref oscColour);
+            buffer.Serialize(ref pianoRollWidth);
+            buffer.Serialize(ref pianoRollZoom);
+            buffer.Serialize(ref pianoRollRows);
+            buffer.Serialize(ref pianoRollPerspective);
+            buffer.Serialize(ref overlayRegisters);
+            buffer.Serialize(ref stereo);
+
+            var channelCount = channels.Count;
+            buffer.Serialize(ref channelCount);
+            buffer.InitializeList(ref channels, channelCount);
+
+            foreach (var channel in channels)
+            {
+                channel.Serialize(buffer);
+            }
+        }
+    }
+
+    public class NsfExportConfig
+    {
+        private static readonly string[] formats = new[] { "NSF", "NSFe" };
+
+        private string name;            // Unset.
+        private string artist;          // Unset.
+        private string copyright;       // Unset.
+        private int    format     = 0;  // NSF.
+        private int    mode       = -1; // Unset.
+        private List<SongListExportSettings> songList = new List<SongListExportSettings>();
+
+        public static string[] Formats => formats;
+
+        public string Name      { get => name;      set => name      = value; }
+        public string Artist    { get => artist;    set => artist    = value; }
+        public string Copyright { get => copyright; set => copyright = value; }
+        public int    Format    { get => format;    set => format    = value; }
+        public int    Mode      { get => mode;      set => mode      = value; }
+        public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
+
+        public NsfExportConfig()
+        {
+        }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref name);
+            buffer.Serialize(ref artist);
+            buffer.Serialize(ref copyright);
+            buffer.Serialize(ref format);
+            buffer.Serialize(ref mode);
+
+            var songCount = songList.Count;
+            buffer.Serialize(ref songCount);
+            buffer.InitializeList(ref songList, songCount);
+
+            foreach (var song in songList)
+            {
+                song.Serialize(buffer);
+            }
+        }
+    }
+
+    public class RomFdsExportConfig
+    {
+        private static readonly string[] types = new[] { "NES ROM", "FDS Disk" };
+        private static readonly string[] modes = new[] { "NTSC", "PAL" };
+
+        private int    type     = -1; // Unset.
+        private string name;          // Unset.
+        private string artist;        // Unset.
+        private int    mode     = -1; // Unset.
+
+        private List<SongListExportSettings> songList = new List<SongListExportSettings>();
+
+        public static string[] Types => types;
+        public static string[] Modes => modes;
+
+        public int    Type   { get => type;   set => type   = value; }
+        public string Name   { get => name;   set => name   = value; }
+        public string Artist { get => artist; set => artist = value; }
+        public int    Mode   { get => mode;   set => mode   = value; }
+
+        public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
+
+        public RomFdsExportConfig()
+        {
+        }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref type);
+            buffer.Serialize(ref name);
+            buffer.Serialize(ref artist);
+            buffer.Serialize(ref mode);
+
+            var songCount = songList.Count;
+            buffer.Serialize(ref songCount);
+            buffer.InitializeList(ref songList, songCount);
+
+            foreach (var song in songList)
+            {
+                song.Serialize(buffer);
+            }
+        }
+    }
+
+    public class MidiExportConfig
+    {
+        private int songId = -1; // Unset.
+        private bool volumeVelocity = true;
+        private bool slidesAsPitch  = true;
+        private int  pitchWheelRange = 24;
+        private int  mode = 0; // Instrument.
+        private List<MidiInstrumentExportSettings> midiInstruments = new List<MidiInstrumentExportSettings>();
+
+        public int  SongId          { get => songId;          set => songId          = value; }
+        public bool VolumeVelocity  { get => volumeVelocity;  set => volumeVelocity  = value; }
+        public bool SlidesAsPitch   { get => slidesAsPitch;   set => slidesAsPitch   = value; }
+        public int  PitchWheelRange { get => pitchWheelRange; set => pitchWheelRange = value; }
+        public int  Mode            { get => mode;            set => mode            = value; }
+        public List<MidiInstrumentExportSettings> MidiInstruments { get => midiInstruments; set => midiInstruments = value; }
+
+        public MidiExportConfig()
+        {
+        }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref volumeVelocity);
+            buffer.Serialize(ref slidesAsPitch);
+            buffer.Serialize(ref pitchWheelRange);
+            buffer.Serialize(ref mode);
+
+            var instCount = midiInstruments.Count;
+            buffer.Serialize(ref instCount);
+            buffer.InitializeList(ref midiInstruments, instCount);
+
+            foreach (var inst in midiInstruments)
+            {
+                inst.Serialize(buffer);
+            }
+        }
+    }
+
+    public class VgmExportConfig
+    {
+        // All are unset here, aside from smooth looping.
+        private int    songId = -1;
+        private string trackTitle;
+        private string gameName;
+        private string system;
+        private string composer;
+        private string date;
+        private string vgmBy;
+        private string notes;
+        private bool   smoothLoop = true;
+
+        public int    SongId     { get => songId;     set => songId     = value; }
+        public string TrackTitle { get => trackTitle; set => trackTitle = value; }
+        public string GameName   { get => gameName;   set => gameName   = value; }
+        public string System     { get => system;     set => system     = value; }
+        public string Composer   { get => composer;   set => composer   = value; }
+        public string Date       { get => date;       set => date       = value; }
+        public string VgmBy      { get => vgmBy;      set => vgmBy      = value; }
+        public string Notes      { get => notes;      set => notes      = value; }
+        public bool   SmoothLoop { get => smoothLoop; set => smoothLoop = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref songId);
+            buffer.Serialize(ref trackTitle);
+            buffer.Serialize(ref gameName);
+            buffer.Serialize(ref system);
+            buffer.Serialize(ref composer);
+            buffer.Serialize(ref date);
+            buffer.Serialize(ref vgmBy);
+            buffer.Serialize(ref notes);
+            buffer.Serialize(ref smoothLoop);
+        }
+    }
+
+    public class FamiStudioTextExportConfig
+    {
+        private int songId;
+        private bool deleteUnusedData;
+        private List<SongListExportSettings> songList = new List<SongListExportSettings>();
+
+        public int SongId { get => songId; set => songId = value; }
+        public bool DeleteUnusedData { get => deleteUnusedData; set => deleteUnusedData = value; }
+        public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref deleteUnusedData);
+
+            var songCount = songList.Count;
+            buffer.Serialize(ref songCount);
+            buffer.InitializeList(ref songList, songCount);
+
+            foreach (var song in songList)
+            {
+                song.Serialize(buffer);
+            }
+        }
+    }
+
+    public class FamiTrackerTextExportConfig
+    {
+        private int songId;
+        private List<SongListExportSettings> songList = new List<SongListExportSettings>();
+
+        public int SongId { get => songId; set => songId = value; }
+        public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            var songCount = songList.Count;
+            buffer.Serialize(ref songCount);
+            buffer.InitializeList(ref songList, songCount);
+
+            foreach (var song in songList)
+            {
+                song.Serialize(buffer);
+            }
+        }
+    }
+
+    public class MusicCodeExportConfig()
+    {
+        private int format = AssemblyFormat.CA65;
+        private bool separate;
+        private string songName = "{project}_{song}";
+        private string dmcName = "{project}";
+        private int dmcExportMode = DpcmExportMode.Minimum;
+        private bool unusedMappings;
+        private bool songListInclude;
+        private List<SongListExportSettings> songList = new List<SongListExportSettings>();
+
+        public int    Format          { get => format;          set => format           = value; }
+        public bool   Separate        { get => separate;        set => separate         = value; }
+        public string SongName        { get => songName;        set => songName         = value; }
+        public string DmcName         { get => dmcName;         set => dmcName          = value; }
+        public int    DmcExportMode   { get => dmcExportMode;   set => dmcExportMode    = value; }
+        public bool   UnusedMappings  { get => unusedMappings;  set => unusedMappings   = value; }
+        public bool   SongListInclude { get => songListInclude; set => songListInclude  = value; }
+        public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref format);
+            buffer.Serialize(ref separate);
+            buffer.Serialize(ref songName);
+            buffer.Serialize(ref dmcName);
+            buffer.Serialize(ref dmcExportMode);
+            buffer.Serialize(ref unusedMappings);
+            buffer.Serialize(ref songListInclude);
+
+            var songCount = songList.Count;
+            buffer.Serialize(ref songCount);
+            buffer.InitializeList(ref songList, songCount);
+
+            foreach (var song in songList)
+            {
+                song.Serialize(buffer);
+            }
+        }
+    }
+
+    public class SfxExportConfig()
+    {
+        private int  format = AssemblyFormat.CA65;
+        private int  mode   = -1; // Unset.
+        private bool include;
+        private List<SongListExportSettings> songList = new List<SongListExportSettings>();
+
+        public int Format   { get => format;  set => format  = value; }
+        public int Mode     { get => mode;    set => mode    = value; }
+        public bool Include { get => include; set => include = value; }
+        public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
+
+        public void Serialize(ProjectBuffer buffer)
+        {
+            buffer.Serialize(ref format);
+            buffer.Serialize(ref mode);
+
+            var songCount = songList.Count;
+            buffer.Serialize(ref songCount);
+            buffer.InitializeList(ref songList, songCount);
+
+            foreach (var song in songList)
+            {
+                song.Serialize(buffer);
+            }
         }
     }
 
@@ -2740,7 +3346,7 @@ namespace FamiStudio
                 return NoneInstrumentName;
             else if (idx == 0 && mode == LocalizationMode.ChipName)
                 return NoneName;
-            else 
+            else
                 return LocalizedNames[idx];
         }
 
