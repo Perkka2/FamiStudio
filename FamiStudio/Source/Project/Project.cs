@@ -29,7 +29,7 @@ namespace FamiStudio
         // Version 16 = FamiStudio 4.2.0 (Folders, sound engine options, project mixer settings)
         // Version 17 = FamiStudio 4.3.0 (Tuning)
         // Version 18 = FamiStudio 4.4.0 (FDS multi-wave)
-        // Version 19 = FamiStudio 4.5.0 (VRC7 release override option, groove padding serialization)
+        // Version 19 = FamiStudio 4.5.0 (VRC7 release override option, groove padding serialization, project export settings)
         public const int Version = 19;
         public const int MaxMappedSampleSize = 0x40000;
         public const int MaxDPCMBanks = 64;

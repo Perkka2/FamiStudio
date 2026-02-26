@@ -264,7 +264,7 @@ namespace FamiStudio
         LocalizedString VGMUnsupportedExpLabel;
         #endregion
 
-        // Settings for grids / checkboxes.
+        // Settings for grids where toggling song reloads them.
         List<ChannelExportSettings> audioChannelSettings = new();
         List<ChannelExportSettings> videoChannelSettings = new();
         List<MidiInstrumentExportSettings> midiInstSettings = new();
@@ -276,7 +276,7 @@ namespace FamiStudio
             app = win.FamiStudio;
             project = app.Project;
 
-            // Make copies of some current grid / checkbox settings to work on.
+            // Make copies of some current grid settings to work on.
             // NOTE: These need to be initialised before the dialog.
             audioChannelSettings = project.AudioExportConfig.Channels.ToList();
             videoChannelSettings = project.VideoExportConfig.Channels.ToList();
@@ -1159,7 +1159,7 @@ namespace FamiStudio
             if (!preview)
             {
                 var exportSettings = project.VideoExportConfig;
-                
+
                 exportSettings.Mode = videoMode;
                 exportSettings.SongId = settings.SongId;
                 exportSettings.Resolution = resolutionIdx;
