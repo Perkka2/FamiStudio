@@ -95,7 +95,7 @@ namespace FamiStudio
             set 
             {
                 Debug.Assert(value != null);
-                text = FilterString(maxLength > 0 ? value.Substring(0, maxLength) : value);
+                text = FilterString(maxLength > 0 ? value.Substring(0, Math.Min(value.Length, maxLength)) : value);
                 scrollX = 0;
                 caretIndex = 0;
                 selectionStart = 0;

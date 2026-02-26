@@ -818,6 +818,15 @@ namespace FamiStudio
 
             while (time < songDuration)
             {
+                // Broken MIDI files can exceed max pattern length of 2048. Split if this is the case.
+                var currentBpm   = MicroSecondsToBPM(tempo);
+                var currentTempo = GetClosestMatchingTempo(currentBpm, 4);
+                var noteLength   = Utils.Min(currentTempo.groove);
+                while (noteLength * 4 * numer * measuresPerPattern > 2048)
+                {
+                    numer /= 2;
+                }
+
                 var ratio = (4.0 / denom);
 
                 var key = new Tuple<int, int, int>(numer, denom, tempo);
@@ -881,7 +890,7 @@ namespace FamiStudio
 
                     song.ChangeFamiStudioTempoGroove(initialTempo.groove, false);
                     song.SetBeatLength(song.NoteLength * 4);
-                    song.SetDefaultPatternLength(song.BeatLength * defaultNumer * measuresPerPattern);
+                    song.SetDefaultPatternLength(Math.Min(song.BeatLength * defaultNumer * measuresPerPattern, 2048)); // Max length as safety.
 
                     break;
                 }
