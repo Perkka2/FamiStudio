@@ -3000,7 +3000,7 @@ namespace FamiStudio
 
     public class MidiExportConfig
     {
-        private int songId = -1; // Unset.
+        private int  songId = -1; // Unset.
         private bool volumeVelocity = true;
         private bool slidesAsPitch  = true;
         private int  pitchWheelRange = 24;
@@ -3076,11 +3076,9 @@ namespace FamiStudio
 
     public class FamiStudioTextExportConfig
     {
-        private int songId;
         private bool deleteUnusedData;
         private List<SongListExportSettings> songList = new List<SongListExportSettings>();
 
-        public int SongId { get => songId; set => songId = value; }
         public bool DeleteUnusedData { get => deleteUnusedData; set => deleteUnusedData = value; }
         public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
 
@@ -3101,10 +3099,8 @@ namespace FamiStudio
 
     public class FamiTrackerTextExportConfig
     {
-        private int songId;
         private List<SongListExportSettings> songList = new List<SongListExportSettings>();
 
-        public int SongId { get => songId; set => songId = value; }
         public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
 
         public void Serialize(ProjectBuffer buffer)
