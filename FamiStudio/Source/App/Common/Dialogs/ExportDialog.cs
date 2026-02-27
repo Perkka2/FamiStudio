@@ -621,7 +621,7 @@ namespace FamiStudio
                     page.AddTextBox(TrackTitleEnglishLabel.Colon, !string.IsNullOrEmpty(vgmSettings.TrackTitle) ? vgmSettings.TrackTitle : page.GetPropertyValue<string>(VGMSongSelect), 0, false, TrackTitleEnglishTooltip); // 1/2
                     page.AddTextBox(GameNameEnglishLabel.Colon, !string.IsNullOrEmpty(vgmSettings.GameName) ? vgmSettings.GameName : project.Name, 0, false, GameNameEnglishTooltip); // 2/3
                     page.AddTextBox(SystemEnglishLabel.Colon, !string.IsNullOrEmpty(vgmSettings.System) ? vgmSettings.System :
-                    (project.PalMode ? "PAL NES" : "NTSC NES/Famicom") +
+                    VgmExportConfig.Systems[project.PalMode ? 1 : 0] +
                     (project.UsesVrc7Expansion ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Vrc7)}" : "") +
                     (project.UsesFdsExpansion ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Fds)}" : "") +
                     (project.UsesS5BExpansion ? $" + {ExpansionType.GetLocalizedName(ExpansionType.S5B)}" : "") +
@@ -723,7 +723,7 @@ namespace FamiStudio
                         props.SetPropertyValue(10, settings.OscThickness);
                         props.SetDropDownListIndex(11, settings.OscColour);
                         props.SetDropDownListIndex(12, settings.PianoRollWidth);
-                        props.SetPropertyValue(13, project.UsesFamiTrackerTempo ? "100%" : "25%");
+                        props.SetPropertyValue(13, VideoExportConfig.PianoRollZoomLevels[project.UsesFamiTrackerTempo ? 4 : 2]);
                         props.SetPropertyValue(14, int.Max(1, Utils.DivideAndRoundUp(channelCount, 8)));
                         props.SetDropDownListIndex(15, settings.PianoRollPerspective);
                         props.SetPropertyValue(16, settings.OverlayRegisters);
@@ -758,7 +758,7 @@ namespace FamiStudio
             {
                 var type      = project.GetActiveChannelList()[rowIdx];
                 var isEnabled = props.GetPropertyValue<bool>(18, rowIdx, 0);
-                var panning   = props.GetPropertyValue<int>(18, rowIdx, 2) / 100.0f;
+                var panning   = props.GetPropertyValue<int>(18, rowIdx, 2);
                 var transpose = props.GetPropertyValue<int>(18, rowIdx, 3);
                 var trigger   = props.GetPropertyValue<string>(18, rowIdx, 4) == PeakSpeedOption ? 1 : 0;
                 var song      = project.Songs[props.GetSelectedIndex(1)];
@@ -767,7 +767,7 @@ namespace FamiStudio
                 if (found != null)
                 {
                     found.Enabled   = isEnabled;
-                    found.Panning   = (int)(panning * 100);
+                    found.Panning   = panning;
                     found.Transpose = transpose;
                     found.Trigger   = trigger;
                 }
@@ -778,7 +778,7 @@ namespace FamiStudio
                         SongId      = song.Id,
                         ChannelType = type,
                         Enabled     = isEnabled,
-                        Panning     = (int)(panning * 100),
+                        Panning     = panning,
                         Transpose   = transpose,
                         Trigger     = trigger
                     });
@@ -794,7 +794,7 @@ namespace FamiStudio
             }
             else if (propIdx == 1)
             {
-                props.SetPropertyEnabled(3, (string)value != "WAV");
+                props.SetPropertyEnabled(3, (string)value != AudioFormatType.Names[0]);
             }
             else if (propIdx == 4)
             {
@@ -824,14 +824,14 @@ namespace FamiStudio
             {
                 var type    = project.GetActiveChannelList()[rowIdx];
                 var enabled = props.GetPropertyValue<bool>(11, rowIdx, 0);
-                var panning = props.GetPropertyValue<int>(11, rowIdx, 2) / 100.0f;
+                var panning = props.GetPropertyValue<int>(11, rowIdx, 2);
                 var song    = project.Songs[props.GetSelectedIndex(0)];
 
                 var found  = audioChannelSettings.Find(s => s.SongId == song.Id && s.ChannelType == type);         
                 if (found != null)
                 {
                     found.Enabled = enabled;
-                    found.Panning = (int)(panning * 100);
+                    found.Panning = panning;
                 }
                 else
                 {
@@ -840,7 +840,7 @@ namespace FamiStudio
                         SongId      = song.Id,
                         ChannelType = type,
                         Enabled     = enabled,
-                        Panning     = (int)(panning * 100)
+                        Panning     = panning
                     });
                 }
             }
@@ -897,7 +897,7 @@ namespace FamiStudio
                         props.SetPropertyValue(0, project.Name);
                         props.SetPropertyValue(1, project.Author);
                         props.SetPropertyValue(2, project.Copyright);
-                        props.SetPropertyValue(3, "NSF");
+                        props.SetPropertyValue(3, NsfExportConfig.Formats[0]);
                         props.SetDropDownListIndex(4, project.PalMode ? MachineType.PAL : MachineType.NTSC);
                         props.UpdateCheckBoxList(5, GetSongNames(), trues);
                     }
@@ -1737,7 +1737,7 @@ namespace FamiStudio
                         project.ResetVgmExportSettings();
 
                         var settings = project.VgmExportConfig;
-                        var defName  = (project.PalMode ? "PAL NES" : "NTSC NES/Famicom") +
+                        var defName  = VgmExportConfig.Systems[project.PalMode ? 1 : 0] +
                             (project.UsesVrc7Expansion  ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Vrc7)}" : "") +
                             (project.UsesFdsExpansion   ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Fds)}"  : "") +
                             (project.UsesS5BExpansion   ? $" + {ExpansionType.GetLocalizedName(ExpansionType.S5B)}"  : "") +

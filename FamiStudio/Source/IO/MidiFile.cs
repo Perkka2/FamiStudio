@@ -818,16 +818,31 @@ namespace FamiStudio
 
             while (time < songDuration)
             {
-                // Broken MIDI files can exceed max pattern length of 2048. Split if this is the case.
+                var ratio = (4.0 / denom);
+
+                // Workaround for MIDI files with ridiculously high numer values.
                 var currentBpm   = MicroSecondsToBPM(tempo);
                 var currentTempo = GetClosestMatchingTempo(currentBpm, 4);
                 var noteLength   = Utils.Min(currentTempo.groove);
-                while (noteLength * 4 * numer * measuresPerPattern > 2048)
+                while (noteLength * 4 * numer * ratio * measuresPerPattern > 2048)
                 {
-                    numer /= 2;
-                }
+                    // Try reduce measures first.
+                    if (measuresPerPattern > 1)
+                    {
+                        measuresPerPattern /= 2;
+                        continue;
+                    }
 
-                var ratio = (4.0 / denom);
+                    // If still too long, half the numer instead. In an edge case 
+                    // if the numer is odd, pattern lengths may end up uneven.
+                    if (noteLength * 4 * numer * ratio * measuresPerPattern > 2048)
+                        numer /= 2;
+
+                    // Safety. In the event this occurs, patterns will be truncated.
+                    // Theoretically, it should never happen.
+                    if (numer <= 1)
+                        break;
+                }
 
                 var key = new Tuple<int, int, int>(numer, denom, tempo);
                 if (!tempoCounts.ContainsKey(key))
@@ -890,8 +905,12 @@ namespace FamiStudio
 
                     song.ChangeFamiStudioTempoGroove(initialTempo.groove, false);
                     song.SetBeatLength(song.NoteLength * 4);
-                    song.SetDefaultPatternLength(Math.Min(song.BeatLength * defaultNumer * measuresPerPattern, 2048)); // Max length as safety.
 
+                    var patternLength = (int)(song.BeatLength * (defaultNumer * (4.0 / defaultDenom)) * measuresPerPattern);
+                    if (patternLength > 2048)
+                        Log.LogMessage(LogSeverity.Warning, $"Default pattern length is longer than 2048. Patterns will be truncated.");
+
+                    song.SetDefaultPatternLength(Math.Min(patternLength, 2048));
                     break;
                 }
             }
@@ -934,8 +953,11 @@ namespace FamiStudio
                     var patternBpm = MicroSecondsToBPM(patternInfo.tempo);
                     var patternTempo = GetClosestMatchingTempo(patternBpm, 4);
                     var noteLength = Utils.Min(patternTempo.groove);
-
-                    song.SetPatternCustomSettings(patternIdx, (int)Math.Round(noteLength * 4 * patternInfo.numer * ratio * patternInfo.measureCount), noteLength * 4, patternTempo.groove);
+                    var patternLength = (int)Math.Round(noteLength * 4 * patternInfo.numer * ratio * patternInfo.measureCount);
+                    if (patternLength > 2048)
+                        Log.LogMessage(LogSeverity.Warning, $"Pattern {patternIdx} is more than 2048 notes long, truncating.");
+                    
+                    song.SetPatternCustomSettings(patternIdx, Math.Min(patternLength, 2048), noteLength * 4, patternTempo.groove);
                 }
 
                 if (patternInfos.Count == 256)
