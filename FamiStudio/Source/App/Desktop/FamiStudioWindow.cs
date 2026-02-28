@@ -54,7 +54,6 @@ namespace FamiStudio
         private Point contextMenuPoint = Point.Empty;
         private double lastTickTime = -1.0f;
         private bool quit = false;
-        private bool linuxOsDialogPresented;
         private int lastCursorX = -1;
         private int lastCursorY = -1;
         private ModifierKeys modifiers = new ModifierKeys();
@@ -535,12 +534,11 @@ namespace FamiStudio
                         {
                             DelayRightClick(ctrl, ex);
                         }
-                        else if (dlgAfter != dlgBefore || linuxOsDialogPresented)
+                        else if (dlgAfter != dlgBefore)
                         {
                             // If a mouse down happens to pop a dialog, send a mouse up immediate. Clears
                             // the "press" status on button. The real fix would be to have a focus system 
                             // that works on more than just dialogs. LostFocus would then clear the status.
-                            // NOTE: This also happens with Linux dialogs, using the same workaround.
                             ctrl.SendPointerUp(ex);
                         }
                     }
@@ -994,11 +992,6 @@ namespace FamiStudio
                     Tick();
                     RenderFrameAndSwapBuffer();
                     ConditionalEmitDelayedRightClick();
-                    linuxOsDialogPresented = false;
-                }
-                else
-                {
-                    linuxOsDialogPresented = true;
                 }
 
                 if (allowSleep)

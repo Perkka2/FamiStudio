@@ -238,9 +238,11 @@ namespace FamiStudio
 
             if (Enabled && (e.Left || (e.Right && canRightClick)))
             {
+                // Set to true first. Prevents buttons getting stuck down when opening out of process dialogs.
+                press = true; 
+
                 if (!e.IsTouchEvent && !clickOnMouseUp)
                     TriggerClickEvent(e, e.Left);
-                press = true;
             }
 
             MarkDirty();
