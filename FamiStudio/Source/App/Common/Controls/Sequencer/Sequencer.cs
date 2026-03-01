@@ -3280,7 +3280,7 @@ namespace FamiStudio
             continuouslyFollowing = false;
 
             if ((App.IsPlaying || force) && App.FollowModeEnabled && Settings.FollowSync != Settings.FollowSyncPianoRoll && !panning && 
-                captureOperation == CaptureOperation.None && !window.IsAsyncDialogInProgress)
+                captureOperation == CaptureOperation.None && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress)
             {
                 var frame = App.CurrentFrame;
                 var seekX = GetPixelForNote(App.CurrentFrame);

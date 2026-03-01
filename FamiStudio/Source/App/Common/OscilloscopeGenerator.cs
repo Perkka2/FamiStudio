@@ -90,7 +90,7 @@ namespace FamiStudio
                     // On desktop, the main window stops ticking whenever a dialog is present.
                     // Oscilloscope updates will not be rendered during this time, so we don't
                     // need to process it. Mobile handles this differently.
-                    if (Platform.IsDesktop && FamiStudioWindow.Instance.IsAsyncDialogInProgress) 
+                    if (Platform.IsDesktop && (FamiStudioWindow.Instance.IsAsyncDialogInProgress || FamiStudioWindow.Instance.IsOutOfProcessDialogInProgress)) 
                         break;
                     
                     if (sampleQueue.TryDequeue(out var pair))

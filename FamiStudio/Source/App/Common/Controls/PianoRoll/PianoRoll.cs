@@ -2824,7 +2824,7 @@ namespace FamiStudio
                             highlightNote = song.Channels[editChannel].GetNoteAt(highlightLocation);
                         }
                     }
-                    else if (!ParentWindow.IsAsyncDialogInProgress)
+                    else if (!ParentWindow.IsAsyncDialogInProgress && !ParentWindow.IsOutOfProcessDialogInProgress)
                     {
                         if (HasHighlightedNote() && CaptureOperationRequiresNoteHighlight(captureOperation))
                         {
@@ -5175,7 +5175,7 @@ namespace FamiStudio
 
         private bool AllowGizmos()
         {
-            return  window != null && !window.IsAsyncDialogInProgress;
+            return  window != null && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress;
         }
 
         private List<Gizmo> GetNoteGizmos(out Note note, out NoteLocation location)
@@ -9835,7 +9835,7 @@ namespace FamiStudio
             continuouslyFollowing = false;
 
             if ((App.IsPlaying || force) && App.FollowModeEnabled && Settings.FollowSync != Settings.FollowSyncSequencer && !panning && 
-                captureOperation == CaptureOperation.None && editMode == EditionMode.Channel && !window.IsAsyncDialogInProgress)
+                captureOperation == CaptureOperation.None && editMode == EditionMode.Channel && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress)
             {
                 var frame = App.CurrentFrame;
                 var seekX = GetPixelXForAbsoluteNoteIndex(frame);

@@ -1758,7 +1758,7 @@ namespace FamiStudio
 
         protected override void OnRender(Graphics g)
         {
-            if (selectedTab == TabType.Registers && !window.IsAsyncDialogInProgress)
+            if (selectedTab == TabType.Registers && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress)
                 App.ActivePlayer.GetRegisterValues(registerValues);
 
             base.OnRender(g);
