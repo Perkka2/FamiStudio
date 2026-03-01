@@ -820,30 +820,6 @@ namespace FamiStudio
             {
                 var ratio = (4.0 / denom);
 
-                // Workaround for MIDI files with ridiculously high numer values.
-                var currentBpm   = MicroSecondsToBPM(tempo);
-                var currentTempo = GetClosestMatchingTempo(currentBpm, 4);
-                var noteLength   = Utils.Min(currentTempo.groove);
-                while (noteLength * 4 * numer * ratio * measuresPerPattern > 2048)
-                {
-                    // Try reduce measures first.
-                    if (measuresPerPattern > 1)
-                    {
-                        measuresPerPattern /= 2;
-                        continue;
-                    }
-
-                    // If still too long, half the numer instead. In an edge case 
-                    // if the numer is odd, pattern lengths may end up uneven.
-                    if (noteLength * 4 * numer * ratio * measuresPerPattern > 2048)
-                        numer /= 2;
-
-                    // Safety. In the event this occurs, patterns will be truncated.
-                    // Theoretically, it should never happen.
-                    if (numer <= 1)
-                        break;
-                }
-
                 var key = new Tuple<int, int, int>(numer, denom, tempo);
                 if (!tempoCounts.ContainsKey(key))
                     tempoCounts.Add(key, 0);
@@ -899,6 +875,8 @@ namespace FamiStudio
                     defaultDenom = kv.Key.Item2;
                     defaultTempo = kv.Key.Item3;
 
+                    var ratio = (4.0 / defaultDenom);
+
                     // Setup default song settings.
                     var initialBpm = MicroSecondsToBPM(defaultTempo);
                     var initialTempo = GetClosestMatchingTempo(initialBpm, 4);
@@ -906,9 +884,9 @@ namespace FamiStudio
                     song.ChangeFamiStudioTempoGroove(initialTempo.groove, false);
                     song.SetBeatLength(song.NoteLength * 4);
 
-                    var patternLength = (int)(song.BeatLength * (defaultNumer * (4.0 / defaultDenom)) * measuresPerPattern);
+                    var patternLength = (int)(song.BeatLength * (defaultNumer * ratio) * measuresPerPattern);
                     if (patternLength > 2048)
-                        Log.LogMessage(LogSeverity.Warning, $"Default pattern length is longer than 2048. Patterns will be truncated.");
+                        Log.LogMessage(LogSeverity.Warning, $"Default pattern length is longer than 2048. Patterns will be truncated. Try reducing measures per pattern.");
 
                     song.SetDefaultPatternLength(Math.Min(patternLength, 2048));
                     break;
