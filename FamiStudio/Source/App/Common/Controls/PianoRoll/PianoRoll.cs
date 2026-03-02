@@ -6887,7 +6887,7 @@ namespace FamiStudio
                 NoteLocation.FromAbsoluteNoteIndex(Song, selectionMin),
                 NoteLocation.FromAbsoluteNoteIndex(Song, selectionMax));
 
-            note.Release = note.HasRelease ? 0 : Math.Max(1, note.Duration / 2);
+            note.Release = note.HasRelease ? 0 : Math.Max(1, Math.Min(note.Duration, App.SelectedChannel.GetDistanceToNextNote(location)) / 2);
 
             if (selected)
             {

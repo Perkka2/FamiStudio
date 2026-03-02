@@ -877,9 +877,9 @@ namespace FamiStudio
                 }
             }
 
-            if (IsN163 && n163WavPreset != WavePresetType.Custom)
+            if (IsN163 && n163WavPreset != WavePresetType.Custom && n163WavPreset != WavePresetType.Resample)
                 Debug.Assert(N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset));
-            if (IsFds && fdsWavPreset != WavePresetType.Custom)
+            if (IsFds && fdsWavPreset != WavePresetType.Custom && fdsWavPreset != WavePresetType.Resample)
                 Debug.Assert(FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset));
             if (IsFds && fdsModPreset != WavePresetType.Custom)
                 Debug.Assert(FdsModulationEnvelope.ValidatePreset(EnvelopeType.FdsModulation, fdsModPreset));
@@ -1168,9 +1168,9 @@ namespace FamiStudio
                 {
                     // Revert back presets to "customs" if they no longer match what the code generates.
                     // This is in case we change the code that generates the preset.
-                    if (IsN163 && n163WavPreset != WavePresetType.Custom && !N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset))
+                    if (IsN163 && n163WavPreset != WavePresetType.Custom && n163WavPreset != WavePresetType.Resample && !N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset))
                         n163WavPreset = WavePresetType.Custom;
-                    if (IsFds && fdsWavPreset != WavePresetType.Custom && !FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset))
+                    if (IsFds && fdsWavPreset != WavePresetType.Custom && fdsWavPreset != WavePresetType.Resample && !FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset))
                         fdsWavPreset = WavePresetType.Custom;
                     if (IsFds && fdsModPreset != WavePresetType.Custom && !FdsModulationEnvelope.ValidatePreset(EnvelopeType.FdsModulation, fdsModPreset))
                         fdsModPreset = WavePresetType.Custom;
