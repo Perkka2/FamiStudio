@@ -6960,13 +6960,11 @@ namespace FamiStudio
                 var selection = IsHighlightedNoteSelected();
                 var menu = new List<ContextMenuOption>();
 
-                if (IsNoteSelected(mouseLocation))
-                {
-                    menu.Add(new ContextMenuOption("MenuDeleteSelection", DeleteSelectedNotesContext, () => { DeleteSelectedNotes(); }));
-                }
-
                 if (note != null)
                 {
+                    if (IsNoteSelected(mouseLocation))
+                        menu.Add(new ContextMenuOption("MenuDeleteSelection", DeleteSelectedNotesContext, () => { DeleteSelectedNotes(); }));
+
                     menu.Insert(0, new ContextMenuOption("MenuDelete", DeleteNoteContext, () => { DeleteSingleNote(noteLocation, mouseLocation, note); }));
 
                     if (note.IsMusical)
@@ -6995,6 +6993,31 @@ namespace FamiStudio
                 }
                 else
                 {
+                    var scales  = new[] { ScaleMajor, ScaleMinor, ScaleDorian, ScalePhrygian, ScaleLydian, ScaleMixolydian, ScaleLocrian, ScaleMelodicMinor, ScaleHarmonicMinor, ScaleDoubleHarmonic };
+                    var roots   = new[] { "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B" };
+                    var options = new ContextMenuOption[scales.Length + roots.Length];
+
+                    for (var i = 0; i < scales.Length; i++)
+                    {
+                        var j = i; // Important, copy for lamdba.
+                        var name = scales[i];
+
+                        options[i] = new ContextMenuOption(name, tooltip, () => { scaleType = j; }, () => scaleType == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? ContextMenuSeparator.Before : ContextMenuSeparator.None);
+                    }
+
+                    for (var i = 0; i < roots.Length; i++)
+                    {
+                        var j = i; // Important, copy for lamdba.
+                        var name = roots[i];
+
+                        options[i + scales.Length] = new ContextMenuOption(name, tooltip, () => { rootNoteIdx = j; }, () => rootNoteIdx == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? ContextMenuSeparator.Before : ContextMenuSeparator.None);
+                    }
+
+                    menu.AddRange(options);
+
+                    if (IsNoteSelected(mouseLocation))
+                        menu.Add(new ContextMenuOption("MenuDeleteSelection", DeleteSelectedNotesContext, () => { DeleteSelectedNotes(); }, ContextMenuSeparator.Before));
+
                     note = channel.FindMusicalNoteAtLocation(ref noteLocation, -1);
 
                     if (note != null)
@@ -9602,40 +9625,6 @@ namespace FamiStudio
             return false;
         }
 
-        private bool HandleMouseUpScalesMaximize(PointerEventArgs e)
-        {
-            if (e.Right && IsPointOnMaximizeButton(e.X, e.Y))
-            { 
-                var scales = new[] { ScaleMajor, ScaleMinor, ScaleDorian, ScalePhrygian, ScaleLydian, ScaleMixolydian, ScaleLocrian, ScaleMelodicMinor, ScaleHarmonicMinor, ScaleDoubleHarmonic };
-                var roots  = new[] { "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B" };
-
-                var options = new ContextMenuOption[scales.Length + roots.Length + 1];
-
-                options[0] = new ContextMenuOption(MaximizePianoRollTooltip, null, () => { ToggleMaximize(); }, () => maximized ? ContextMenuCheckState.Checked : ContextMenuCheckState.Unchecked);
-
-                for (var i = 0; i < scales.Length; i++)
-                {
-                    var j = i; // Important, copy for lamdba.
-                    var name = scales[i];
-
-                    options[i + 1] = new ContextMenuOption(name, tooltip, () => { scaleType = j; }, () => scaleType == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? ContextMenuSeparator.Before : ContextMenuSeparator.None);
-                }
-
-                for (var i = 0; i < roots.Length; i++)
-                {
-                    var j = i; // Important, copy for lamdba.
-                    var name = roots[i];
-
-                    options[i + 1 + scales.Length] = new ContextMenuOption(name, tooltip, () => { rootNoteIdx = j; }, () => rootNoteIdx == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? ContextMenuSeparator.Before : ContextMenuSeparator.None);
-                }
-
-                App.ShowContextMenuAsync(options);
-                return true;
-            }
-
-            return false;
-        }
-
         private bool HandleMouseUpChannelNote(PointerEventArgs e)
         {
             return e.Right && HandleContextMenuChannelNote(e.X, e.Y);
@@ -9697,7 +9686,6 @@ namespace FamiStudio
                     if (HandleMouseUpChannelNote(e)) goto Handled;
                     if (HandleMouseUpEffectPanel(e)) goto Handled;
                     if (HandleMouseUpChannelHeader(e)) goto Handled;
-                    if (HandleMouseUpScalesMaximize(e)) goto Handled;
                 }
 
                 if (editMode == EditionMode.Envelope ||
