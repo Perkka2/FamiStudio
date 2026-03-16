@@ -6960,11 +6960,13 @@ namespace FamiStudio
                 var selection = IsHighlightedNoteSelected();
                 var menu = new List<ContextMenuOption>();
 
+                if (IsNoteSelected(mouseLocation))
+                {
+                    menu.Add(new ContextMenuOption("MenuDeleteSelection", DeleteSelectedNotesContext, () => { DeleteSelectedNotes(); }));
+                }
+
                 if (note != null)
                 {
-                    if (IsNoteSelected(mouseLocation))
-                        menu.Add(new ContextMenuOption("MenuDeleteSelection", DeleteSelectedNotesContext, () => { DeleteSelectedNotes(); }));
-
                     menu.Insert(0, new ContextMenuOption("MenuDelete", DeleteNoteContext, () => { DeleteSingleNote(noteLocation, mouseLocation, note); }));
 
                     if (note.IsMusical)
@@ -6989,12 +6991,27 @@ namespace FamiStudio
                             menu.Add(new ContextMenuOption("MenuSnap", SetSnapContext.Format(SnapResolutionType.Names[factor]), () => { snapResolution = factor; snap = true; MarkDirty(); }));
                     }
 
+                    if (IsSelectionValid())
+                    {
+                        menu.Add(new ContextMenuOption("MenuClearSelection", ClearSelectionContext, () => { ClearSelection(); ClearHighlightedNote(); }));
+                    }
+
                     menu.Add(new ContextMenuOption("MenuSelectNote", SelectNoteRangeContext, () => { SelectSingleNote(noteLocation, mouseLocation, note); }, ContextMenuSeparator.Before));
                 }
                 else
                 {
-                    var scales  = new[] { ScaleMajor, ScaleMinor, ScaleDorian, ScalePhrygian, ScaleLydian, ScaleMixolydian, ScaleLocrian, ScaleMelodicMinor, ScaleHarmonicMinor, ScaleDoubleHarmonic };
-                    var roots   = new[] { "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B" };
+                    note = channel.FindMusicalNoteAtLocation(ref noteLocation, -1);
+
+                    if (note != null)
+                        menu.Add(new ContextMenuOption("MenuSelectNote", SelectNoteRangeContext, () => { SelectSingleNote(noteLocation, mouseLocation, note); }, ContextMenuSeparator.Before));
+
+                    if (IsSelectionValid())
+                    {
+                        menu.Add(new ContextMenuOption("MenuClearSelection", ClearSelectionContext, () => { ClearSelection(); ClearHighlightedNote(); }));
+                    }
+
+                    var scales = new[] { ScaleMajor, ScaleMinor, ScaleDorian, ScalePhrygian, ScaleLydian, ScaleMixolydian, ScaleLocrian, ScaleMelodicMinor, ScaleHarmonicMinor, ScaleDoubleHarmonic };
+                    var roots = new[] { "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B" };
                     var options = new ContextMenuOption[scales.Length + roots.Length];
 
                     for (var i = 0; i < scales.Length; i++)
@@ -7014,19 +7031,6 @@ namespace FamiStudio
                     }
 
                     menu.AddRange(options);
-
-                    if (IsNoteSelected(mouseLocation))
-                        menu.Add(new ContextMenuOption("MenuDeleteSelection", DeleteSelectedNotesContext, () => { DeleteSelectedNotes(); }, ContextMenuSeparator.Before));
-
-                    note = channel.FindMusicalNoteAtLocation(ref noteLocation, -1);
-
-                    if (note != null)
-                        menu.Add(new ContextMenuOption("MenuSelectNote", SelectNoteRangeContext, () => { SelectSingleNote(noteLocation, mouseLocation, note); }, ContextMenuSeparator.Before));
-                }
-
-                if (IsSelectionValid())
-                {
-                    menu.Add(new ContextMenuOption("MenuClearSelection", ClearSelectionContext, () => { ClearSelection(); ClearHighlightedNote(); }));
                 }
 
                 if (menu.Count > 0)
