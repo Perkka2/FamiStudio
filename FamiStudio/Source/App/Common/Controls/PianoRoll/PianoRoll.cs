@@ -7019,7 +7019,7 @@ namespace FamiStudio
                         var j = i; // Important, copy for lamdba.
                         var name = scales[i];
 
-                        options[i] = new ContextMenuOption(name, tooltip, () => { scaleType = j; }, () => scaleType == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? ContextMenuSeparator.Before : ContextMenuSeparator.None);
+                        options[i] = new ContextMenuOption(name, tooltip, () => { scaleType = j; }, () => scaleType == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? Platform.IsMobile ? ContextMenuSeparator.MobileBefore : ContextMenuSeparator.Before : ContextMenuSeparator.None);
                     }
 
                     for (var i = 0; i < roots.Length; i++)
@@ -7027,7 +7027,7 @@ namespace FamiStudio
                         var j = i; // Important, copy for lamdba.
                         var name = roots[i];
 
-                        options[i + scales.Length] = new ContextMenuOption(name, tooltip, () => { rootNoteIdx = j; }, () => rootNoteIdx == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? ContextMenuSeparator.Before : ContextMenuSeparator.None);
+                        options[i + scales.Length] = new ContextMenuOption(name, tooltip, () => { rootNoteIdx = j; }, () => rootNoteIdx == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? Platform.IsMobile ? ContextMenuSeparator.MobileBefore : ContextMenuSeparator.Before : ContextMenuSeparator.None);
                     }
 
                     menu.AddRange(options);
