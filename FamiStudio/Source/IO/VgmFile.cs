@@ -1504,7 +1504,13 @@ namespace FamiStudio
                             // S5B is offset by -1 vs 2A03/2A07 tables.
                             if (channel.IsS5BChannel)
                                 period -= 1;
-                                
+                            
+                            if(period < noteTable[1] && octave != 0)
+                            {
+                                octave--;
+                                period *= 2;
+                            }
+
                             note = (byte)GetBestMatchingNote(period, noteTable, out finePitch);
                         }
 
@@ -2038,6 +2044,8 @@ namespace FamiStudio
                             epsmRegisterLo[vgmData[1]] = vgmData[2] & 0x3f;
                         else if (vgmData[1] >= 0xB4 && vgmData[1] <= 0xB6)
                             epsmRegisterLo[vgmData[1]] = vgmData[2] & 0xf7;
+                        else if (vgmData[1] >= 0xA4 && vgmData[1] <= 0xA6)
+                            epsmRegisterLo[vgmData[1]] = vgmData[2] & 0x3f;
                         else
                             epsmRegisterLo[vgmData[1]] = vgmData[2];
                         expansionMask = expansionMask | ExpansionType.EPSMMask;
@@ -2058,6 +2066,8 @@ namespace FamiStudio
                             epsmRegisterHi[vgmData[1]] = vgmData[2] & 0x3f;
                         else if (vgmData[1] >= 0xB4 && vgmData[1] <= 0xB6)
                             epsmRegisterHi[vgmData[1]] = vgmData[2] & 0xf7;
+                        else if (vgmData[1] >= 0xA4 && vgmData[1] <= 0xA6)
+                            epsmRegisterHi[vgmData[1]] = vgmData[2] & 0x3f;
                         else
                             epsmRegisterHi[vgmData[1]] = vgmData[2];
                         expansionMask = expansionMask | ExpansionType.EPSMMask;
