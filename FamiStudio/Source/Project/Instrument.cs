@@ -1168,8 +1168,13 @@ namespace FamiStudio
                 {
                     // Revert back presets to "customs" if they no longer match what the code generates.
                     // This is in case we change the code that generates the preset.
-                    if (IsN163 && n163WavPreset != WavePresetType.Custom && n163WavPreset != WavePresetType.Resample && !N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset))
-                        n163WavPreset = WavePresetType.Custom;
+                    if (IsN163)
+                    {
+                        N163WaveformEnvelope.ChunkLength = n163WavSize; 
+                        if (n163WavPreset != WavePresetType.Custom && n163WavPreset != WavePresetType.Resample && !N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset))
+                            n163WavPreset = WavePresetType.Custom;
+                    }
+                    
                     if (IsFds && fdsWavPreset != WavePresetType.Custom && fdsWavPreset != WavePresetType.Resample && !FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset))
                         fdsWavPreset = WavePresetType.Custom;
                     if (IsFds && fdsModPreset != WavePresetType.Custom && !FdsModulationEnvelope.ValidatePreset(EnvelopeType.FdsModulation, fdsModPreset))
