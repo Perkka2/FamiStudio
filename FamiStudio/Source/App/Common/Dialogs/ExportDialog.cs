@@ -407,12 +407,14 @@ namespace FamiStudio
                 case ExportFormat.WavMp3:
                     var audioSettings = project.AudioExportConfig;
                     var lastAudioSong = project.GetSong(audioSettings.SongId);
+                    var sampleRates   = AudioExportConfig.SampleRates;
+                    var bitRates      = AudioExportConfig.BitRates;
                     var loopModes     = new string[] { LoopNTimesOption, DurationOption };
                     page.AddDropDownList(SongLabel.Colon, songNames, lastAudioSong != null ? lastAudioSong.Name : app.SelectedSong.Name, SingleSongTooltip); // 0
-                    page.AddDropDownList(FormatLabel.Colon, AudioFormatType.Names, AudioFormatType.Names[audioSettings.Format], WavFormatTooltip); // 1
-                    page.AddDropDownList(SampleRateLabel.Colon, AudioExportConfig.SampleRates, AudioExportConfig.SampleRates[audioSettings.SampleRate], SampleRateTooltip); // 2
-                    page.AddDropDownList(BitRateLabel.Colon, AudioExportConfig.BitRates, AudioExportConfig.BitRates[audioSettings.BitRate], AudioBitRateTooltip); // 3
-                    page.AddDropDownList(ModeLabel.Colon, loopModes, loopModes[audioSettings.LoopModeIndex], LoopModeTooltip); // 4
+                    page.AddDropDownList(FormatLabel.Colon, AudioFormatType.Names, AudioFormatType.Names.Contains(audioSettings.Format) ? audioSettings.Format : "WAV", WavFormatTooltip); // 1
+                    page.AddDropDownList(SampleRateLabel.Colon, sampleRates, sampleRates.Contains(audioSettings.SampleRate) ? audioSettings.SampleRate : "44100", SampleRateTooltip); // 2
+                    page.AddDropDownList(BitRateLabel.Colon, bitRates, bitRates.Contains(audioSettings.BitRate) ? audioSettings.BitRate : "192", AudioBitRateTooltip); // 3
+                    page.AddDropDownList(ModeLabel.Colon, loopModes, loopModes.Contains(audioSettings.LoopMode) ? audioSettings.LoopMode : LoopNTimesOption, LoopModeTooltip); // 4
                     page.AddNumericUpDown(LoopCountLabel.Colon, audioSettings.LoopCount, 1, 10, 1, LoopCountTooltip); // 5
                     page.AddNumericUpDown(DurationSecLabel.Colon, audioSettings.Duration, 1, 1000, 1, DurationTooltip); // 6
                     page.AddNumericUpDown(AudioDelayMsLabel.Colon, audioSettings.Delay, 0, 100, 1, DelayTooltip); // 7
@@ -437,25 +439,34 @@ namespace FamiStudio
                 case ExportFormat.Video:
                     if (Platform.CanExportToVideo)
                     {
-                        var videoSettings = project.VideoExportConfig;
-                        var lastVideoSong = project.GetSong(videoSettings.SongId);
-                        var channelsGridData = GetDefaultChannelsGridData(true, true, lastVideoSong ?? app.SelectedSong, out var numActiveChannels);
-                        page.AddDropDownList(VideoModeLabel.Colon, Localization.ToStringArray(VideoMode.LocalizedNames), VideoMode.LocalizedNames[videoSettings.Mode], VideoModeTooltip); // 0
+                        var videoSettings     = project.VideoExportConfig;
+                        var lastVideoSong     = project.GetSong(videoSettings.SongId);
+                        var videoModes        = Localization.ToStringArray(VideoMode.LocalizedNames);
+                        var videoResolutions  = Localization.ToStringArray(VideoResolution.LocalizedNames);
+                        var videoFrameRates   = VideoExportConfig.FrameRates;
+                        var videoAudioRates   = VideoExportConfig.AudioBitRates;
+                        var videoVideoRates   = VideoExportConfig.VideoBitRates;
+                        var videoOscColors    = Localization.ToStringArray(OscilloscopeColorType.LocalizedNames);
+                        var videoPianoWidths  = VideoExportConfig.PianoRollWidths;
+                        var videoPianoZooms   = VideoExportConfig.PianoRollZoomLevels;
+                        var pianoPerspectives = VideoExportConfig.PianoRollPercpectives;
+                        var channelsGridData  = GetDefaultChannelsGridData(true, true, lastVideoSong ?? app.SelectedSong, out var numActiveChannels);
+                        page.AddDropDownList(VideoModeLabel.Colon, videoModes, videoModes.Contains(videoSettings.Mode) ? videoSettings.Mode : videoModes[VideoMode.Oscilloscope], VideoModeTooltip); // 0
                         page.AddDropDownList(SongLabel.Colon, songNames, lastVideoSong != null ? lastVideoSong.Name : app.SelectedSong.Name, SingleSongTooltip); // 1
-                        page.AddDropDownList(ResolutionLabel.Colon, Localization.ToStringArray(VideoResolution.LocalizedNames), VideoResolution.LocalizedNames[videoSettings.Resolution], VideoResTooltip); // 2
-                        page.AddDropDownList(FrameRateLabel.Colon, VideoExportConfig.FrameRates, VideoExportConfig.FrameRates[videoSettings.FrameRate], FpsTooltip); // 3
-                        page.AddDropDownList(AudioBitRateLabel.Colon, VideoExportConfig.AudioBitRates, VideoExportConfig.AudioBitRates[videoSettings.AudioBitRate], AudioBitRateTooltip); // 4
-                        page.AddDropDownList(VideoBitRateLabel.Colon, VideoExportConfig.VideoBitRates, VideoExportConfig.VideoBitRates[videoSettings.VideoBitRate], VideoBitRateTooltip); // 5
+                        page.AddDropDownList(ResolutionLabel.Colon, videoResolutions, videoResolutions.Contains(videoSettings.Resolution) ? videoSettings.Resolution : videoResolutions[0], VideoResTooltip); // 2
+                        page.AddDropDownList(FrameRateLabel.Colon, videoFrameRates, videoFrameRates.Contains(videoSettings.FrameRate) ? videoSettings.FrameRate : "50/60 FPS", FpsTooltip); // 3
+                        page.AddDropDownList(AudioBitRateLabel.Colon, videoAudioRates, videoAudioRates.Contains(videoSettings.AudioBitRate) ? videoSettings.AudioBitRate : "192", AudioBitRateTooltip); // 4
+                        page.AddDropDownList(VideoBitRateLabel.Colon, videoVideoRates, videoVideoRates.Contains(videoSettings.VideoBitRate) ? videoSettings.VideoBitRate : "8000", VideoBitRateTooltip); // 5
                         page.AddNumericUpDown(LoopCountLabel.Colon, videoSettings.LoopCount, 1, 8, 1, LoopCountTooltip); // 6
                         page.AddNumericUpDown(AudioDelayMsLabel.Colon, videoSettings.Delay, 0, 100, 1, DelayTooltip); // 7
                         page.AddNumericUpDown(OscColumnsLabel.Colon, videoSettings.OscColumns >= 1 ? videoSettings.OscColumns : int.Max(1, Utils.DivideAndRoundUp(numActiveChannels, 8)), 1, 5, 1, OscColumnsTooltip); // 8
                         page.AddNumericUpDown(OscilloscopeWindowLabel.Colon, videoSettings.OscWindow, 1, 4, 1, OscWindowTooltip); // 9
                         page.AddNumericUpDown(OscThicknessLabel.Colon, videoSettings.OscThickness, 2, 10, 2, OscThicknessTooltip); // 10
-                        page.AddDropDownList(OscColorLabel.Colon, Localization.ToStringArray(OscilloscopeColorType.LocalizedNames), OscilloscopeColorType.LocalizedNames[videoSettings.OscColour]); // 11
-                        page.AddDropDownList(PianoRollNoteWidthLabel.Colon, VideoExportConfig.PianoRollWidths, VideoExportConfig.PianoRollWidths[videoSettings.PianoRollWidth], PianoRollNoteWidthTooltip); // 12
-                        page.AddDropDownList(PianoRollZoomLabel.Colon, VideoExportConfig.PianoRollZoomLevels, VideoExportConfig.PianoRollZoomLevels[videoSettings.PianoRollZoom >= 0 ? videoSettings.PianoRollZoom : project.UsesFamiTrackerTempo ? 4 : 2], PianoRollZoomTooltip); // 13
+                        page.AddDropDownList(OscColorLabel.Colon, videoOscColors, videoOscColors.Contains(videoSettings.OscColour) ? videoSettings.OscColour : videoOscColors[OscilloscopeColorType.Instruments]); // 11
+                        page.AddDropDownList(PianoRollNoteWidthLabel.Colon, videoPianoWidths, videoPianoWidths.Contains(videoSettings.PianoRollWidth) ? videoSettings.PianoRollWidth : "Auto", PianoRollNoteWidthTooltip); // 12
+                        page.AddDropDownList(PianoRollZoomLabel.Colon, videoPianoZooms, videoPianoZooms.Contains(videoSettings.PianoRollZoom) ? videoSettings.PianoRollZoom : project.UsesFamiTrackerTempo ? "100%" : "25%", PianoRollZoomTooltip); // 13
                         page.AddNumericUpDown(PianoRollNumRowsLabel.Colon, videoSettings.PianoRollRows >= 1 ? videoSettings.PianoRollRows : int.Max(1, Utils.DivideAndRoundUp(numActiveChannels, 8)), 1, 16, 1, PianoRollNumRowsTooltip); // 14
-                        page.AddDropDownList(PianoRollPerspectiveLabel.Colon, VideoExportConfig.PianoRollPercpectives, VideoExportConfig.PianoRollPercpectives[videoSettings.PianoRollPerspective], PianoRollPerspectiveTooltip); // 15
+                        page.AddDropDownList(PianoRollPerspectiveLabel.Colon, pianoPerspectives, pianoPerspectives.Contains(videoSettings.PianoRollPerspective) ? videoSettings.PianoRollPerspective : "60°", PianoRollPerspectiveTooltip); // 15
                         page.AddCheckBox(VideoOverlayRegistersLabel.Colon, videoSettings.OverlayRegisters, VideoOverlayRegistersTooltip); // 16
                         page.AddCheckBox(StereoLabel.Colon, videoSettings.Stereo || project.OutputsStereoAudio, StereoTooltip); // 17
                         page.AddGrid(ChannelsLabel, new[] {
@@ -467,10 +478,10 @@ namespace FamiStudio
                         }, channelsGridData, project.GetActiveChannelCount() + 1, ChannelGridTooltipVid); // 18
                         page.AddButton(null, PreviewLabel); // 19
                         page.AddButton(null, ResetDefaultsLabel.Format(FormatVideoMessage.ToString().ToLowerInvariant())); // 20
-                        page.SetPropertyEnabled(12, videoSettings.Mode == VideoMode.PianoRollSeparateChannels || videoSettings.Mode == VideoMode.PianoRollUnified);
-                        page.SetPropertyEnabled(13, videoSettings.Mode == VideoMode.PianoRollSeparateChannels || videoSettings.Mode == VideoMode.PianoRollUnified);
-                        page.SetPropertyEnabled(14, videoSettings.Mode == VideoMode.PianoRollSeparateChannels);
-                        page.SetPropertyEnabled(15, videoSettings.Mode == VideoMode.PianoRollSeparateChannels || videoSettings.Mode == VideoMode.PianoRollUnified);
+                        page.SetPropertyEnabled(12, videoSettings.Mode == videoModes[VideoMode.PianoRollSeparateChannels] || videoSettings.Mode == videoModes[VideoMode.PianoRollUnified]);
+                        page.SetPropertyEnabled(13, videoSettings.Mode == videoModes[VideoMode.PianoRollSeparateChannels] || videoSettings.Mode == videoModes[VideoMode.PianoRollUnified]);
+                        page.SetPropertyEnabled(14, videoSettings.Mode == videoModes[VideoMode.PianoRollSeparateChannels]);
+                        page.SetPropertyEnabled(15, videoSettings.Mode == videoModes[VideoMode.PianoRollSeparateChannels] || videoSettings.Mode == videoModes[VideoMode.PianoRollUnified]);
                         page.SetPropertyEnabled(17, !project.OutputsStereoAudio); // Force stereo for EPSM.
                         page.SetPropertyVisible(19, Platform.IsDesktop);
                         page.SetColumnEnabled(18, 2, videoSettings.Stereo || project.OutputsStereoAudio);
@@ -486,13 +497,15 @@ namespace FamiStudio
                     break;
                 case ExportFormat.Nsf:
                     var nsfSettings = project.NsfExportConfig;
-                    var nsfMap = project.NsfExportConfig.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
+                    var nsfFormats  = NsfExportConfig.Formats;
+                    var nsfModes    = Localization.ToStringArray(MachineType.LocalizedNames);
+                    var nsfMap      = project.NsfExportConfig.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
                     bool[] nsfBools = project.Songs.Select(s => !nsfMap.ContainsKey(s.Id) || nsfMap[s.Id]).ToArray();
                     page.AddTextBox(NameLabel.Colon, !string.IsNullOrEmpty(nsfSettings.Name) ? nsfSettings.Name : project.Name, 31); // 0
                     page.AddTextBox(ArtistLabel.Colon, !string.IsNullOrEmpty(nsfSettings.Artist) ? nsfSettings.Artist : project.Author, 31); // 1
                     page.AddTextBox(CopyrightLabel.Colon, !string.IsNullOrEmpty(nsfSettings.Copyright) ? nsfSettings.Copyright : project.Copyright, 31); // 2
-                    page.AddDropDownList(FormatLabel.Colon, NsfExportConfig.Formats, NsfExportConfig.Formats[nsfSettings.Format], NsfFormatTooltip); // 3
-                    page.AddDropDownList(ModeLabel.Colon, Localization.ToStringArray(MachineType.LocalizedNames), MachineType.LocalizedNames[nsfSettings.Mode >= 0 ? nsfSettings.Mode : project.PalMode ? MachineType.PAL : MachineType.NTSC], MachineTooltip); // 4
+                    page.AddDropDownList(FormatLabel.Colon, nsfFormats, nsfFormats.Contains(nsfSettings.Format) ? nsfSettings.Format : "NSF", NsfFormatTooltip); // 3
+                    page.AddDropDownList(ModeLabel.Colon, nsfModes, nsfModes.Contains(nsfSettings.Mode) ? nsfSettings.Mode : project.PalMode ? nsfModes[MachineType.PAL] : nsfModes[MachineType.NTSC], MachineTooltip); // 4
                     page.AddCheckBoxList(Platform.IsDesktop ? null : SongsLabel, songNames, nsfBools, SongListTooltip, 12); // 5
                     page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[2])); // 6
 #if DEBUG
@@ -506,12 +519,14 @@ namespace FamiStudio
                         var romSettings = project.RomFdsExportConfig;
                         var romName     = !string.IsNullOrEmpty(romSettings.Name)   ? romSettings.Name   : project.Name;
                         var romAuthor   = !string.IsNullOrEmpty(romSettings.Artist) ? romSettings.Artist : project.Author;
+                        var romTypes    = RomFdsExportConfig.Types;
+                        var romModes    = RomFdsExportConfig.Modes;
                         var romMap      = romSettings.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
                         bool[] romBools = project.Songs.Select(s => romMap.ContainsKey(s.Id) ? romMap[s.Id] : true).ToArray();
-                        page.AddDropDownList(TypeLabel.Colon, RomFdsExportConfig.Types, RomFdsExportConfig.Types[!project.UsesFdsExpansion ? 0 : romSettings.Type >= 0 ? romSettings.Type : 1], RomFdsFormatTooltip); // 0
+                        page.AddDropDownList(TypeLabel.Colon, romTypes, !project.UsesFdsExpansion ? FormatRomMessage : romTypes.Contains(romSettings.Type) ? romSettings.Type : FormatFdsMessage, RomFdsFormatTooltip); // 0
                         page.AddTextBox(NameLabel.Colon, romName.Substring(0, Math.Min(28, romName.Length)), 28); // 1
                         page.AddTextBox(ArtistLabel.Colon, romAuthor.Substring(0, Math.Min(28, romAuthor.Length)), 28); // 2
-                        page.AddDropDownList(ModeLabel.Colon, RomFdsExportConfig.Modes, RomFdsExportConfig.Modes[romSettings.Mode >= 0 ? romSettings.Mode : project.PalMode ? 1 : 0], MachineTooltip); // 3
+                        page.AddDropDownList(ModeLabel.Colon, romModes, romModes.Contains(romSettings.Mode) ? romSettings.Mode : project.PalMode ? "PAL" : "NTSC", MachineTooltip); // 3
                         page.AddCheckBoxList(Platform.IsDesktop ? null : SongsLabel, songNames, romBools, SongListTooltip, 12); // 4
                         page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[3])); // 5
                         page.SetPropertyEnabled(0, project.UsesFdsExpansion);
@@ -526,12 +541,13 @@ namespace FamiStudio
                 case ExportFormat.Midi:
                     var midiSettings = project.MidiExportConfig;
                     var lastMidiSong = project.GetSong(midiSettings.SongId);
+                    var midiModes    = Localization.ToStringArray(MidiExportInstrumentMode.LocalizedNames);
 
                     page.AddDropDownList(SongLabel.Colon, songNames, lastMidiSong != null ? lastMidiSong.Name : app.SelectedSong.Name, SingleSongTooltip); // 0
                     page.AddCheckBox(ExportVolumeAsVelocityLabel.Colon, midiSettings.VolumeVelocity, MidiVelocityTooltip); // 1
                     page.AddCheckBox(ExportSlideAsPitchWheelLabel.Colon, midiSettings.SlidesAsPitch, MidiPitchTooltip); // 2
                     page.AddNumericUpDown(PitchWheelRangeLabel.Colon, midiSettings.PitchWheelRange, 1, 24, 1, MidiPitchRangeTooltip); // 3
-                    page.AddDropDownList(InstrumentModeLabel.Colon, Localization.ToStringArray(MidiExportInstrumentMode.LocalizedNames), MidiExportInstrumentMode.LocalizedNames[midiSettings.Mode], MidiInstrumentTooltip); // 4
+                    page.AddDropDownList(InstrumentModeLabel.Colon, midiModes, midiModes.Contains(midiSettings.Mode) ? midiSettings.Mode : midiModes[0], MidiInstrumentTooltip); // 4
                     page.AddGrid(InstrumentsLabels, new[] { new ColumnDesc("", 0.4f), new ColumnDesc("", 0.6f, MidiFileReader.MidiInstrumentNames) }, GetMidiInstrumentData(MidiExportInstrumentMode.Instrument, out _), 14, MidiInstGridTooltip, GridOptions.MobileTwoColumnLayout); // 5
                     page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[4])); // 6
                     page.PropertyChanged += Midi_PropertyChanged;
@@ -580,20 +596,22 @@ namespace FamiStudio
                     else
                     {
                         var musicCodeSettings = format == ExportFormat.FamiStudioMusic ? project.FamiStudioMusicExportConfig : project.FamiTone2MusicExportConfig;
+                        var musicCodeFormats = AssemblyFormat.Names;
+                        var musicCodeDmcModes = Localization.ToStringArray(DpcmExportMode.LocalizedNames);
                         var musicCodeMap = musicCodeSettings.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
                         bool[] musicCodeBools = project.Songs.Select(s => !musicCodeMap.ContainsKey(s.Id) || musicCodeMap[s.Id]).ToArray();
-                        page.AddDropDownList(FormatLabel.Colon, AssemblyFormat.Names, AssemblyFormat.Names[musicCodeSettings.Format], FT2AssemblyTooltip); // 0
+                        page.AddDropDownList(FormatLabel.Colon, musicCodeFormats, musicCodeFormats.Contains(musicCodeSettings.Format) ? musicCodeSettings.Format : "CA65", FT2AssemblyTooltip); // 0
                         page.AddCheckBox(SeparateFilesLabel.Colon, musicCodeSettings.Separate, FT2SepFilesTooltip); // 1
                         page.AddTextBox(SongNamePatternLabel.Colon, musicCodeSettings.SongName, 0, false, FT2SepFilesFmtTooltip); // 2
                         page.AddTextBox(DmcNamePatternLabel.Colon, musicCodeSettings.DmcName, 0, false, FT2DmcFmtTooltip); // 3
-                        page.AddDropDownList(DmcExportModeLabel.Colon, Localization.ToStringArray(DpcmExportMode.LocalizedNames), DpcmExportMode.LocalizedNames[musicCodeSettings.DmcExportMode], FT2DmcExportModeTooltip); // 4
+                        page.AddDropDownList(DmcExportModeLabel.Colon, musicCodeDmcModes, musicCodeDmcModes.Contains(musicCodeSettings.DmcExportMode) ? musicCodeSettings.DmcExportMode : musicCodeDmcModes[DpcmExportMode.Minimum], FT2DmcExportModeTooltip); // 4
                         page.AddCheckBox(ExportUnusedMappingsLabel.Colon, musicCodeSettings.UnusedMappings, FT2ExportUnusedMappingsLabel); // 5
                         page.AddCheckBox(GenerateSongListIncludeLabel.Colon, musicCodeSettings.SongListInclude, FT2SongListTooltip); // 6
                         page.AddCheckBoxList(null, songNames, musicCodeBools, SongListTooltip, 12); // 7
                         page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[format == ExportFormat.FamiStudioMusic ? 8 : 10])); // 8
                         page.SetPropertyEnabled(2, musicCodeSettings.Separate);
                         page.SetPropertyEnabled(3, musicCodeSettings.Separate);
-                        page.SetPropertyEnabled(5, musicCodeSettings.DmcExportMode != DpcmExportMode.Minimum);
+                        page.SetPropertyEnabled(5, musicCodeSettings.DmcExportMode != musicCodeDmcModes[DpcmExportMode.Minimum]);
                         page.PropertyChanged += SoundEngine_PropertyChanged;
                         page.PropertyClicked += SoundEngine_PropertyClicked;
                     }
@@ -601,10 +619,12 @@ namespace FamiStudio
                 case ExportFormat.FamiTone2Sfx:
                 case ExportFormat.FamiStudioSfx:
                     var sfxCodeSettings = format == ExportFormat.FamiStudioSfx ? project.FamiStudioSfxExportConfig : project.FamiTone2SfxExportConfig;
+                    var sfxCodeFormats = AssemblyFormat.Names;
+                    var sfxCodeTypes = Localization.ToStringArray(MachineType.LocalizedNames);
                     var sfxCodeMap = sfxCodeSettings.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
                     bool[] sfxCodeBools = project.Songs.Select(s => !sfxCodeMap.ContainsKey(s.Id) || sfxCodeMap[s.Id]).ToArray();
-                    page.AddDropDownList(FormatLabel.Colon, AssemblyFormat.Names, AssemblyFormat.Names[sfxCodeSettings.Format], FT2AssemblyTooltip); // 0
-                    page.AddDropDownList(ModeLabel.Colon, Localization.ToStringArray(MachineType.LocalizedNames), MachineType.LocalizedNames[sfxCodeSettings.Mode >= 0 ? sfxCodeSettings.Mode : project.PalMode ? MachineType.PAL : MachineType.NTSC], MachineTooltip); // 1
+                    page.AddDropDownList(FormatLabel.Colon, sfxCodeFormats, sfxCodeFormats.Contains(sfxCodeSettings.Format) ? sfxCodeSettings.Format : "CA65", FT2AssemblyTooltip); // 0
+                    page.AddDropDownList(ModeLabel.Colon, sfxCodeTypes, sfxCodeTypes.Contains(sfxCodeSettings.Mode) ? sfxCodeSettings.Mode : project.PalMode ? "PAL" : "NTSC", MachineTooltip); // 1
                     page.AddCheckBox(GenerateSfxInclude.Colon, sfxCodeSettings.Include, FT2SfxSongListTooltip); // 2
                     page.AddCheckBoxList(null, songNames, sfxCodeBools, SongListTooltip, 12); // 3
                     page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[format == ExportFormat.FamiStudioSfx ? 9 : 11])); // 4
@@ -710,22 +730,22 @@ namespace FamiStudio
                         var settings = project.VideoExportConfig;
                         var channelCount = project.GetActiveChannelCount();
 
-                        props.SetDropDownListIndex(0, settings.Mode);
+                        props.SetDropDownListIndex(0, VideoMode.Oscilloscope);
                         props.SetDropDownListIndex(1, project.Songs.IndexOf(app.SelectedSong));
-                        props.SetDropDownListIndex(2, settings.Resolution);
-                        props.SetDropDownListIndex(3, settings.FrameRate);
-                        props.SetDropDownListIndex(4, settings.AudioBitRate);
-                        props.SetDropDownListIndex(5, settings.VideoBitRate);
+                        props.SetDropDownListIndex(2, 0); // 1080p landscape.
+                        props.SetDropDownListIndex(3, Array.IndexOf(VideoExportConfig.FrameRates, "50/60 FPS"));
+                        props.SetDropDownListIndex(4, Array.IndexOf(VideoExportConfig.AudioBitRates, "192"));
+                        props.SetDropDownListIndex(5, Array.IndexOf(VideoExportConfig.VideoBitRates, "8000"));
                         props.SetPropertyValue(6, settings.LoopCount);
                         props.SetPropertyValue(7, settings.Delay);
                         props.SetPropertyValue(8, int.Max(1, Utils.DivideAndRoundUp(channelCount, 8)));
                         props.SetPropertyValue(9, settings.OscWindow);
                         props.SetPropertyValue(10, settings.OscThickness);
-                        props.SetDropDownListIndex(11, settings.OscColour);
-                        props.SetDropDownListIndex(12, settings.PianoRollWidth);
-                        props.SetPropertyValue(13, VideoExportConfig.PianoRollZoomLevels[project.UsesFamiTrackerTempo ? 4 : 2]);
+                        props.SetDropDownListIndex(11, OscilloscopeColorType.Instruments);
+                        props.SetDropDownListIndex(12, Array.IndexOf(VideoExportConfig.PianoRollWidths, "Auto"));
+                        props.SetPropertyValue(13, Array.IndexOf(VideoExportConfig.PianoRollZoomLevels, project.UsesFamiTrackerTempo ? "100%" : "25%"));
                         props.SetPropertyValue(14, int.Max(1, Utils.DivideAndRoundUp(channelCount, 8)));
-                        props.SetDropDownListIndex(15, settings.PianoRollPerspective);
+                        props.SetDropDownListIndex(15, Array.IndexOf(VideoExportConfig.PianoRollPercpectives, "60°"));
                         props.SetPropertyValue(16, settings.OverlayRegisters);
                         props.SetPropertyValue(17, settings.Stereo || project.OutputsStereoAudio);
                         props.UpdateGrid(18, GetDefaultChannelsGridData(true, true, app.SelectedSong, out _));
@@ -864,10 +884,10 @@ namespace FamiStudio
                         var settings = project.AudioExportConfig;
 
                         props.SetDropDownListIndex(0, project.Songs.IndexOf(app.SelectedSong));
-                        props.SetDropDownListIndex(1, settings.Format);
-                        props.SetDropDownListIndex(2, settings.SampleRate);
-                        props.SetDropDownListIndex(3, settings.BitRate);
-                        props.SetDropDownListIndex(4, settings.LoopModeIndex);
+                        props.SetDropDownListIndex(1, Array.IndexOf(AudioFormatType.Names, "WAV"));
+                        props.SetDropDownListIndex(2, Array.IndexOf(AudioExportConfig.SampleRates, "44100"));
+                        props.SetDropDownListIndex(3, Array.IndexOf(AudioExportConfig.BitRates, "192"));
+                        props.SetPropertyValue(4, LoopNTimesOption);
                         props.SetPropertyValue(5, settings.LoopCount);
                         props.SetPropertyValue(6, settings.Duration);
                         props.SetPropertyValue(7, settings.Delay);
@@ -897,7 +917,7 @@ namespace FamiStudio
                         props.SetPropertyValue(0, project.Name);
                         props.SetPropertyValue(1, project.Author);
                         props.SetPropertyValue(2, project.Copyright);
-                        props.SetPropertyValue(3, NsfExportConfig.Formats[0]);
+                        props.SetPropertyValue(3, Array.IndexOf(NsfExportConfig.Formats, "NSF"));
                         props.SetDropDownListIndex(4, project.PalMode ? MachineType.PAL : MachineType.NTSC);
                         props.UpdateCheckBoxList(5, GetSongNames(), trues);
                     }
@@ -919,7 +939,7 @@ namespace FamiStudio
                         bool[] trues = new bool[project.Songs.Count];
                         Array.Fill(trues, true);
 
-                        props.SetPropertyValue(0, project.UsesFdsExpansion ? 1 : 0);
+                        props.SetDropDownListIndex(0, Array.IndexOf(RomFdsExportConfig.Types, project.UsesFdsExpansion ? FormatFdsMessage : FormatRomMessage));
                         props.SetPropertyValue(1, project.Name);
                         props.SetPropertyValue(2, project.Author);
                         props.SetDropDownListIndex(3, project.PalMode ? MachineType.PAL : MachineType.NTSC);
@@ -986,9 +1006,9 @@ namespace FamiStudio
                     var exportSettings = project.AudioExportConfig;
 
                     exportSettings.SongId        = song.Id;
-                    exportSettings.SampleRate    = props.GetSelectedIndex(2);
-                    exportSettings.BitRate       = props.GetSelectedIndex(3);
-                    exportSettings.LoopModeIndex = loopMode == DurationOption ? 1 : 0;
+                    exportSettings.SampleRate    = props.GetPropertyValue<string>(2);
+                    exportSettings.BitRate       = props.GetPropertyValue<string>(3);
+                    exportSettings.LoopMode      = loopMode;
                     exportSettings.LoopCount     = props.GetPropertyValue<int>(5);
                     exportSettings.Duration      = props.GetPropertyValue<int>(6);
                     exportSettings.SeparateFiles = separateFiles;
@@ -1160,22 +1180,22 @@ namespace FamiStudio
             {
                 var exportSettings = project.VideoExportConfig;
 
-                exportSettings.Mode = videoMode;
+                exportSettings.Mode = props.GetPropertyValue<string>(0);
                 exportSettings.SongId = settings.SongId;
-                exportSettings.Resolution = resolutionIdx;
-                exportSettings.FrameRate = props.GetSelectedIndex(3);
-                exportSettings.AudioBitRate = props.GetSelectedIndex(4);
-                exportSettings.VideoBitRate = props.GetSelectedIndex(5);
+                exportSettings.Resolution = props.GetPropertyValue<string>(2);
+                exportSettings.FrameRate = props.GetPropertyValue<string>(3);
+                exportSettings.AudioBitRate = props.GetPropertyValue<string>(4);
+                exportSettings.VideoBitRate = props.GetPropertyValue<string>(5);
                 exportSettings.LoopCount = settings.LoopCount;
                 exportSettings.Delay = settings.AudioDelay;
                 exportSettings.OscColumns = settings.OscNumColumns;
                 exportSettings.OscWindow = settings.OscWindow;
                 exportSettings.OscThickness = settings.OscLineThickness;
-                exportSettings.OscColour = settings.OscColorMode;
-                exportSettings.PianoRollWidth = props.GetSelectedIndex(12);
-                exportSettings.PianoRollZoom = props.GetSelectedIndex(13);
+                exportSettings.OscColour = props.GetPropertyValue<string>(11);
+                exportSettings.PianoRollWidth = props.GetPropertyValue<string>(12);
+                exportSettings.PianoRollZoom = props.GetPropertyValue<string>(13);
                 exportSettings.PianoRollRows = settings.PianoRollNumRows;
-                exportSettings.PianoRollPerspective = props.GetSelectedIndex(15);
+                exportSettings.PianoRollPerspective = props.GetPropertyValue<string>(15);
                 exportSettings.OverlayRegisters = settings.ShowRegisters;
                 exportSettings.Stereo = props.GetPropertyValue<bool>(17);
 
@@ -1267,8 +1287,8 @@ namespace FamiStudio
                     settings.Name = name;
                     settings.Artist = artist;
                     settings.Copyright = copyright;
-                    settings.Format = props.GetSelectedIndex(3);
-                    settings.Mode = props.GetSelectedIndex(4);
+                    settings.Format = props.GetPropertyValue<string>(3);
+                    settings.Mode = props.GetPropertyValue<string>(4);
 
                     RemoveUnusedChannelSettings(audioChannelSettings);
                     settings.SongList = project.Songs.Select((song, index) => new SongListExportSettings { SongId = song.Id, Enabled = bools[index] }).ToList();
@@ -1323,13 +1343,13 @@ namespace FamiStudio
             var bools  = props.GetPropertyValue<bool[]>(4);
 
             var settings = project.RomFdsExportConfig;
-            settings.Type = props.GetSelectedIndex(0);
+            settings.Type = props.GetPropertyValue<string>(0);
             settings.Name = name;
             settings.Artist = artist;
-            settings.Mode = props.GetSelectedIndex(3);
+            settings.Mode = props.GetPropertyValue<string>(3);
             settings.SongList = project.Songs.Select((song, index) => new SongListExportSettings { SongId = song.Id, Enabled = bools[index] }).ToList();
 
-            if (props.GetPropertyValue<string>(0) == "NES ROM")
+            if (props.GetPropertyValue<string>(0) == FormatRomMessage)
             {
                 Action<string> ExportRomAction = (filename) =>
                 {
@@ -1459,12 +1479,13 @@ namespace FamiStudio
                             project.ResetFamiTone2MusicCodeExportSettings();
 
                         var settings = famistudio ? project.FamiStudioMusicExportConfig : project.FamiTone2MusicExportConfig;
+                        var types = Localization.ToStringArray(DpcmExportMode.LocalizedNames);
 
-                        props.SetDropDownListIndex(0, settings.Format);
+                        props.SetDropDownListIndex(0, Array.IndexOf(AssemblyFormat.Names, "CA65"));
                         props.SetPropertyValue(1, settings.Separate);
                         props.SetPropertyValue(2, settings.SongName);
                         props.SetPropertyValue(3, settings.DmcName);
-                        props.SetDropDownListIndex(4, settings.DmcExportMode);
+                        props.SetDropDownListIndex(4, DpcmExportMode.Minimum);
                         props.SetPropertyValue(5, settings.UnusedMappings);
                         props.SetPropertyValue(6, settings.SongListInclude);
 
@@ -1493,7 +1514,7 @@ namespace FamiStudio
 
                         var settings = famistudio ? project.FamiStudioSfxExportConfig : project.FamiTone2SfxExportConfig;
 
-                        props.SetDropDownListIndex(0, settings.Format);
+                        props.SetDropDownListIndex(0, Array.IndexOf(AssemblyFormat.Names, "CA65"));
                         props.SetDropDownListIndex(1, project.PalMode ? MachineType.PAL : MachineType.NTSC);
                         props.SetPropertyValue(2, settings.Include);
 
@@ -1592,7 +1613,7 @@ namespace FamiStudio
                         props.SetPropertyValue(1, settings.VolumeVelocity);
                         props.SetPropertyValue(2, settings.SlidesAsPitch);
                         props.SetPropertyValue(3, settings.PitchWheelRange);
-                        props.SetDropDownListIndex(4, settings.Mode);
+                        props.SetDropDownListIndex(4, 0); // Instrument.
                         props.UpdateGrid(5, GetMidiInstrumentData(MidiExportInstrumentMode.Instrument, out _));
                     }
                 });
@@ -1630,7 +1651,7 @@ namespace FamiStudio
                     settings.VolumeVelocity = velocity;
                     settings.SlidesAsPitch = slideNotes;
                     settings.PitchWheelRange = pitchRange;
-                    settings.Mode = instrumentMode;
+                    settings.Mode = props.GetPropertyValue<string>(4);
 
                     // Check for and remove any deleted songs, instruments, or channels before saving.
                     var validSongIds = project.Songs.Select(s => s.Id).ToHashSet();
@@ -1881,10 +1902,10 @@ namespace FamiStudio
             var settings = famiStudio ? project.FamiStudioMusicExportConfig : project.FamiTone2MusicExportConfig;
 
             settings.Separate        = separate;
-            settings.Format          = props.GetSelectedIndex(0);
+            settings.Format          = props.GetPropertyValue<string>(0);
             settings.SongName        = songNamePattern;
             settings.DmcName         = dpcmNamePattern;
-            settings.DmcExportMode   = dpcmExportMode;
+            settings.DmcExportMode   = props.GetPropertyValue<string>(4);
             settings.UnusedMappings  = dpcmExportUnusedMappings;
             settings.SongListInclude = generateInclude;
 
@@ -1955,8 +1976,8 @@ namespace FamiStudio
             var bools = props.GetPropertyValue<bool[]>(3);
             var settings = famiStudio ? project.FamiStudioSfxExportConfig : project.FamiTone2SfxExportConfig;
 
-            settings.Format   = props.GetSelectedIndex(0);
-            settings.Mode     = mode;
+            settings.Format   = props.GetPropertyValue<string>(0);
+            settings.Mode     = props.GetPropertyValue<string>(1);
             settings.Include  = generateInclude;
             settings.SongList = project.Songs.Select((song, index) => new SongListExportSettings { SongId = song.Id, Enabled = bools[index] }).ToList();
 
