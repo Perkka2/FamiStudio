@@ -114,7 +114,7 @@ namespace FamiStudio
                 {
                     overrideStop = inst.Vrc7OverrideStop;
 
-                    if (inst.Vrc7SustainBitSet)
+                    if (inst.Vrc7OverrideRelease)
                         sustain = 0x20;
                 }
 

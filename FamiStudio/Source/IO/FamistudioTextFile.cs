@@ -162,7 +162,7 @@ namespace FamiStudio
                                 instrumentLine += GenerateAttribute($"Vrc7Reg{i}", instrument.Vrc7PatchRegs[i]);
                         }
 
-                        instrumentLine += GenerateAttribute($"Vrc7SustainBit", instrument.Vrc7SustainBitSet);
+                        instrumentLine += GenerateAttribute($"Vrc7OverrideRelease", instrument.Vrc7OverrideRelease);
                         instrumentLine += GenerateAttribute($"Vrc7OverrideStop", instrument.Vrc7OverrideStop);
                     }
                     else if (instrument.IsEpsm)
@@ -560,8 +560,8 @@ namespace FamiStudio
                                     }
                                 }
 
-                                if (parameters.TryGetValue("Vrc7SustainBit",   out var vrc7SustainBit))   instrument.Vrc7SustainBitSet = bool.Parse(vrc7SustainBit);
-                                if (parameters.TryGetValue("Vrc7OverrideStop", out var vrc7OverrideStop)) instrument.Vrc7OverrideStop  = bool.Parse(vrc7OverrideStop);
+                                if (parameters.TryGetValue("Vrc7OverrideRelease", out var vrc7OverrideRelease)) instrument.Vrc7OverrideRelease = bool.Parse(vrc7OverrideRelease);
+                                if (parameters.TryGetValue("Vrc7OverrideStop",    out var vrc7OverrideStop))    instrument.Vrc7OverrideStop  = bool.Parse(vrc7OverrideStop);
                             }
                             else if (instrument.IsEpsm)
                             {

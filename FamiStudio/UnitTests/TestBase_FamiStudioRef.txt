@@ -17168,6 +17168,11 @@ Frame 2800 Register 4000 30
 Frame 2800 Register 4004 30
 Frame 2800 Register 4008 80
 Frame 2800 Register 400C F0
+Frame 2800 Register 4015 0F
+Frame 2800 Register 4012 00
+Frame 2800 Register 4013 96
+Frame 2800 Register 4010 0F
+Frame 2800 Register 4015 1F
 Frame 2801 Register 4000 30
 Frame 2801 Register 4004 30
 Frame 2801 Register 4008 80
