@@ -2754,9 +2754,6 @@ namespace FamiStudio
 
     public class AudioExportConfig
     {
-        private static readonly string[] sampleRates = new string[] { "11025", "22050", "44100", "48000" };
-        private static readonly string[] bitRates    = new string[] { "96", "112", "128", "160", "192", "224", "256" };
-
         private int     songId     = -1; // Unset.
         private string  format;
         private string  samplerate;
@@ -2770,9 +2767,6 @@ namespace FamiStudio
         private bool    stereo;
 
         private List<ChannelExportSettings> channels = new List<ChannelExportSettings>(); 
-
-        public static string[] SampleRates => sampleRates;
-        public static string[] BitRates    => bitRates;
 
         public int    SongId        { get => songId;        set => songId        = value; }
         public string Format        { get => format;        set => format        = value; }
@@ -2818,14 +2812,7 @@ namespace FamiStudio
     }
 
     public class VideoExportConfig
-    {
-        private static readonly string[] frameRates            = new[] { "50/60 FPS", "25/30 FPS" };
-        private static readonly string[] audioBitRates         = new[] { "64", "96", "112", "128", "160", "192", "224", "256", "320" };
-        private static readonly string[] videoBitRates         = new[] { "250", "500", "750", "1000", "1500", "2000", "3000", "4000", "5000", "8000", "10000", "20000", "30000" };
-        private static readonly string[] pianoRollWidths       = new[] { "Auto", "50%", "75%", "100%", "125%", "150%", "175%", "200%" };
-        private static readonly string[] pianoRollZoomLevels   = new[] { "6.25%", "12.5%", "25%", "50%", "100%", "200%", "400%", "800%" };
-        private static readonly string[] pianoRollPercpectives = new[] { "0°", "30°", "45°", "60°", "75°" };
-        
+    {        
         private int    songId                = -1; // Unset.
         private string mode;
         private string resolution;
@@ -2847,31 +2834,24 @@ namespace FamiStudio
 
         private List<ChannelExportSettings> channels = new List<ChannelExportSettings>(); 
 
-        public static string[] FrameRates            => frameRates; 
-        public static string[] AudioBitRates         => audioBitRates;
-        public static string[] VideoBitRates         => videoBitRates;
-        public static string[] PianoRollWidths       => pianoRollWidths;
-        public static string[] PianoRollZoomLevels   => pianoRollZoomLevels;
-        public static string[] PianoRollPercpectives => pianoRollPercpectives;
-
-        public int  SongId                  { get => songId;               set => songId               = value; }
-        public string  Mode                 { get => mode;                 set => mode                 = value; }
-        public string  Resolution           { get => resolution;           set => resolution           = value; }
-        public string  FrameRate            { get => frameRate;            set => frameRate            = value; }
-        public string  AudioBitRate         { get => audioBitRate;         set => audioBitRate         = value; }
-        public string  VideoBitRate         { get => videoBitRate;         set => videoBitRate         = value; }
-        public int  LoopCount               { get => loopCount;            set => loopCount            = value; }
-        public int  Delay                   { get => delay;                set => delay                = value; }
-        public int  OscColumns              { get => oscColumns;           set => oscColumns           = value; }
-        public int  OscWindow               { get => oscWindow;            set => oscWindow            = value; }
-        public int  OscThickness            { get => oscThickness;         set => oscThickness         = value; }
-        public string  OscColour            { get => oscColour;            set => oscColour            = value; }
-        public string  PianoRollWidth       { get => pianoRollWidth;       set => pianoRollWidth       = value; }
-        public string  PianoRollZoom        { get => pianoRollZoom;        set => pianoRollZoom        = value; }
-        public int  PianoRollRows           { get => pianoRollRows;        set => pianoRollRows        = value; }
-        public string  PianoRollPerspective { get => pianoRollPerspective; set => pianoRollPerspective = value; }
-        public bool OverlayRegisters        { get => overlayRegisters;     set => overlayRegisters     = value; }
-        public bool Stereo                  { get => stereo;               set => stereo               = value; }
+        public int    SongId               { get => songId;               set => songId               = value; }
+        public string Mode                 { get => mode;                 set => mode                 = value; }
+        public string Resolution           { get => resolution;           set => resolution           = value; }
+        public string FrameRate            { get => frameRate;            set => frameRate            = value; }
+        public string AudioBitRate         { get => audioBitRate;         set => audioBitRate         = value; }
+        public string VideoBitRate         { get => videoBitRate;         set => videoBitRate         = value; }
+        public int    LoopCount            { get => loopCount;            set => loopCount            = value; }
+        public int    Delay                { get => delay;                set => delay                = value; }
+        public int    OscColumns           { get => oscColumns;           set => oscColumns           = value; }
+        public int    OscWindow            { get => oscWindow;            set => oscWindow            = value; }
+        public int    OscThickness         { get => oscThickness;         set => oscThickness         = value; }
+        public string OscColour            { get => oscColour;            set => oscColour            = value; }
+        public string PianoRollWidth       { get => pianoRollWidth;       set => pianoRollWidth       = value; }
+        public string PianoRollZoom        { get => pianoRollZoom;        set => pianoRollZoom        = value; }
+        public int    PianoRollRows        { get => pianoRollRows;        set => pianoRollRows        = value; }
+        public string PianoRollPerspective { get => pianoRollPerspective; set => pianoRollPerspective = value; }
+        public bool   OverlayRegisters     { get => overlayRegisters;     set => overlayRegisters     = value; }
+        public bool   Stereo               { get => stereo;               set => stereo               = value; }
 
         public List<ChannelExportSettings> Channels { get => channels; set => channels = value; }
 
@@ -2913,16 +2893,12 @@ namespace FamiStudio
 
     public class NsfExportConfig
     {
-        private static readonly string[] formats = new[] { "NSF", "NSFe" };
-
         private string name;
         private string artist;
         private string copyright;
         private string format;
         private string mode;
         private List<SongListExportSettings> songList = new List<SongListExportSettings>();
-
-        public static string[] Formats => formats;
 
         public string Name      { get => name;      set => name      = value; }
         public string Artist    { get => artist;    set => artist    = value; }
@@ -2956,18 +2932,12 @@ namespace FamiStudio
 
     public class RomFdsExportConfig
     {
-        private static readonly string[] types = new[] { "NES ROM", "FDS Disk" };
-        private static readonly string[] modes = new[] { "NTSC", "PAL" };
-
         private string type;
         private string name;
         private string artist;
         private string mode;
 
         private List<SongListExportSettings> songList = new List<SongListExportSettings>();
-
-        public static string[] Types => types;
-        public static string[] Modes => modes;
 
         public string Type   { get => type;   set => type   = value; }
         public string Name   { get => name;   set => name   = value; }
@@ -3007,11 +2977,11 @@ namespace FamiStudio
         private string mode;
         private List<MidiInstrumentExportSettings> midiInstruments = new List<MidiInstrumentExportSettings>();
 
-        public int  SongId          { get => songId;          set => songId          = value; }
-        public bool VolumeVelocity  { get => volumeVelocity;  set => volumeVelocity  = value; }
-        public bool SlidesAsPitch   { get => slidesAsPitch;   set => slidesAsPitch   = value; }
-        public int  PitchWheelRange { get => pitchWheelRange; set => pitchWheelRange = value; }
-        public string  Mode         { get => mode;            set => mode            = value; }
+        public int    SongId          { get => songId;          set => songId          = value; }
+        public bool   VolumeVelocity  { get => volumeVelocity;  set => volumeVelocity  = value; }
+        public bool   SlidesAsPitch   { get => slidesAsPitch;   set => slidesAsPitch   = value; }
+        public int    PitchWheelRange { get => pitchWheelRange; set => pitchWheelRange = value; }
+        public string Mode            { get => mode;            set => mode            = value; }
         public List<MidiInstrumentExportSettings> MidiInstruments { get => midiInstruments; set => midiInstruments = value; }
 
         public MidiExportConfig()
@@ -3039,8 +3009,6 @@ namespace FamiStudio
 
     public class VgmExportConfig
     {
-        private static readonly string[] systems = new[] { "NTSC NES/Famicom", "PAL NES" };
-
         // All are unset here, aside from smooth looping.
         private int    songId = -1;
         private string trackTitle;
@@ -3051,8 +3019,6 @@ namespace FamiStudio
         private string vgmBy;
         private string notes;
         private bool   smoothLoop = true;
-
-        public static string[] Systems => systems;
 
         public int    SongId     { get => songId;     set => songId     = value; }
         public string TrackTitle { get => trackTitle; set => trackTitle = value; }
@@ -3123,12 +3089,12 @@ namespace FamiStudio
     public class MusicCodeExportConfig
     {
         private string format;
-        private bool separate;
+        private bool   separate;
         private string songName = "{project}_{song}";
         private string dmcName = "{project}";
         private string dmcExportMode;
-        private bool unusedMappings;
-        private bool songListInclude;
+        private bool   unusedMappings;
+        private bool   songListInclude;
         private List<SongListExportSettings> songList = new List<SongListExportSettings>();
 
         public string Format          { get => format;          set => format           = value; }
@@ -3168,9 +3134,9 @@ namespace FamiStudio
         private bool   include;
         private List<SongListExportSettings> songList = new List<SongListExportSettings>();
 
-        public string Format { get => format;  set => format  = value; }
-        public string Mode   { get => mode;    set => mode    = value; }
-        public bool Include  { get => include; set => include = value; }
+        public string Format  { get => format;  set => format  = value; }
+        public string Mode    { get => mode;    set => mode    = value; }
+        public bool   Include { get => include; set => include = value; }
         public List<SongListExportSettings> SongList { get => songList; set => songList = value; }
 
         public void Serialize(ProjectBuffer buffer)

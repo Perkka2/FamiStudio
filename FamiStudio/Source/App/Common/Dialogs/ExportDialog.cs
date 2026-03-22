@@ -264,6 +264,28 @@ namespace FamiStudio
         LocalizedString VGMUnsupportedExpLabel;
         #endregion
 
+        // Audio Export Strings
+        private readonly string[] audioSampleRates = ["11025", "22050", "44100", "48000"];
+        private readonly string[] audioBitRates    = ["96", "112", "128", "160", "192", "224", "256"];
+
+        // Video Export Strings
+        private readonly string[] videoFrameRates        = ["50/60 FPS", "25/30 FPS"];
+        private readonly string[] videoAudioBitRates     = ["64", "96", "112", "128", "160", "192", "224", "256", "320"];
+        private readonly string[] videoVideoBitRates     = ["250", "500", "750", "1000", "1500", "2000", "3000", "4000", "5000", "8000", "10000", "20000", "30000"];
+        private readonly string[] videoPianoWidths       = ["Auto", "50%", "75%", "100%", "125%", "150%", "175%", "200%"];
+        private readonly string[] videoPianoZoomLevels   = ["6.25%", "12.5%", "25%", "50%", "100%", "200%", "400%", "800%"];
+        private readonly string[] videoPianoPerspectives = ["0°", "30°", "45°", "60°", "75°"];
+
+        // NSF Export Strings
+        private readonly string[] nsfFormats = ["NSF", "NSFe"];
+
+        // ROM / NSF Export Strings
+        private readonly string[] romFdsTypes = ["NES ROM", "FDS Disk"];
+        private readonly string[] romFdsModes = ["NTSC", "PAL"];
+
+        // VGM Export Strings
+        private readonly string[] vgmSystems = ["NTSC NES/Famicom", "PAL NES"];
+
         // Settings for grids where toggling song reloads them.
         List<ChannelExportSettings> audioChannelSettings = new();
         List<ChannelExportSettings> videoChannelSettings = new();
@@ -407,13 +429,11 @@ namespace FamiStudio
                 case ExportFormat.WavMp3:
                     var audioSettings = project.AudioExportConfig;
                     var lastAudioSong = project.GetSong(audioSettings.SongId);
-                    var sampleRates   = AudioExportConfig.SampleRates;
-                    var bitRates      = AudioExportConfig.BitRates;
                     var loopModes     = new string[] { LoopNTimesOption, DurationOption };
                     page.AddDropDownList(SongLabel.Colon, songNames, lastAudioSong != null ? lastAudioSong.Name : app.SelectedSong.Name, SingleSongTooltip); // 0
                     page.AddDropDownList(FormatLabel.Colon, AudioFormatType.Names, AudioFormatType.Names.Contains(audioSettings.Format) ? audioSettings.Format : "WAV", WavFormatTooltip); // 1
-                    page.AddDropDownList(SampleRateLabel.Colon, sampleRates, sampleRates.Contains(audioSettings.SampleRate) ? audioSettings.SampleRate : "44100", SampleRateTooltip); // 2
-                    page.AddDropDownList(BitRateLabel.Colon, bitRates, bitRates.Contains(audioSettings.BitRate) ? audioSettings.BitRate : "192", AudioBitRateTooltip); // 3
+                    page.AddDropDownList(SampleRateLabel.Colon, audioSampleRates, audioSampleRates.Contains(audioSettings.SampleRate) ? audioSettings.SampleRate : "44100", SampleRateTooltip); // 2
+                    page.AddDropDownList(BitRateLabel.Colon, audioBitRates, audioBitRates.Contains(audioSettings.BitRate) ? audioSettings.BitRate : "192", AudioBitRateTooltip); // 3
                     page.AddDropDownList(ModeLabel.Colon, loopModes, loopModes.Contains(audioSettings.LoopMode) ? audioSettings.LoopMode : LoopNTimesOption, LoopModeTooltip); // 4
                     page.AddNumericUpDown(LoopCountLabel.Colon, audioSettings.LoopCount, 1, 10, 1, LoopCountTooltip); // 5
                     page.AddNumericUpDown(DurationSecLabel.Colon, audioSettings.Duration, 1, 1000, 1, DurationTooltip); // 6
@@ -443,20 +463,14 @@ namespace FamiStudio
                         var lastVideoSong     = project.GetSong(videoSettings.SongId);
                         var videoModes        = Localization.ToStringArray(VideoMode.LocalizedNames);
                         var videoResolutions  = Localization.ToStringArray(VideoResolution.LocalizedNames);
-                        var videoFrameRates   = VideoExportConfig.FrameRates;
-                        var videoAudioRates   = VideoExportConfig.AudioBitRates;
-                        var videoVideoRates   = VideoExportConfig.VideoBitRates;
                         var videoOscColors    = Localization.ToStringArray(OscilloscopeColorType.LocalizedNames);
-                        var videoPianoWidths  = VideoExportConfig.PianoRollWidths;
-                        var videoPianoZooms   = VideoExportConfig.PianoRollZoomLevels;
-                        var pianoPerspectives = VideoExportConfig.PianoRollPercpectives;
                         var channelsGridData  = GetDefaultChannelsGridData(true, true, lastVideoSong ?? app.SelectedSong, out var numActiveChannels);
                         page.AddDropDownList(VideoModeLabel.Colon, videoModes, videoModes.Contains(videoSettings.Mode) ? videoSettings.Mode : videoModes[VideoMode.Oscilloscope], VideoModeTooltip); // 0
                         page.AddDropDownList(SongLabel.Colon, songNames, lastVideoSong != null ? lastVideoSong.Name : app.SelectedSong.Name, SingleSongTooltip); // 1
                         page.AddDropDownList(ResolutionLabel.Colon, videoResolutions, videoResolutions.Contains(videoSettings.Resolution) ? videoSettings.Resolution : videoResolutions[0], VideoResTooltip); // 2
                         page.AddDropDownList(FrameRateLabel.Colon, videoFrameRates, videoFrameRates.Contains(videoSettings.FrameRate) ? videoSettings.FrameRate : "50/60 FPS", FpsTooltip); // 3
-                        page.AddDropDownList(AudioBitRateLabel.Colon, videoAudioRates, videoAudioRates.Contains(videoSettings.AudioBitRate) ? videoSettings.AudioBitRate : "192", AudioBitRateTooltip); // 4
-                        page.AddDropDownList(VideoBitRateLabel.Colon, videoVideoRates, videoVideoRates.Contains(videoSettings.VideoBitRate) ? videoSettings.VideoBitRate : "8000", VideoBitRateTooltip); // 5
+                        page.AddDropDownList(AudioBitRateLabel.Colon, videoAudioBitRates, videoAudioBitRates.Contains(videoSettings.AudioBitRate) ? videoSettings.AudioBitRate : "192", AudioBitRateTooltip); // 4
+                        page.AddDropDownList(VideoBitRateLabel.Colon, videoVideoBitRates, videoVideoBitRates.Contains(videoSettings.VideoBitRate) ? videoSettings.VideoBitRate : "8000", VideoBitRateTooltip); // 5
                         page.AddNumericUpDown(LoopCountLabel.Colon, videoSettings.LoopCount, 1, 8, 1, LoopCountTooltip); // 6
                         page.AddNumericUpDown(AudioDelayMsLabel.Colon, videoSettings.Delay, 0, 100, 1, DelayTooltip); // 7
                         page.AddNumericUpDown(OscColumnsLabel.Colon, videoSettings.OscColumns >= 1 ? videoSettings.OscColumns : int.Max(1, Utils.DivideAndRoundUp(numActiveChannels, 8)), 1, 5, 1, OscColumnsTooltip); // 8
@@ -464,9 +478,9 @@ namespace FamiStudio
                         page.AddNumericUpDown(OscThicknessLabel.Colon, videoSettings.OscThickness, 2, 10, 2, OscThicknessTooltip); // 10
                         page.AddDropDownList(OscColorLabel.Colon, videoOscColors, videoOscColors.Contains(videoSettings.OscColour) ? videoSettings.OscColour : videoOscColors[OscilloscopeColorType.Instruments]); // 11
                         page.AddDropDownList(PianoRollNoteWidthLabel.Colon, videoPianoWidths, videoPianoWidths.Contains(videoSettings.PianoRollWidth) ? videoSettings.PianoRollWidth : "Auto", PianoRollNoteWidthTooltip); // 12
-                        page.AddDropDownList(PianoRollZoomLabel.Colon, videoPianoZooms, videoPianoZooms.Contains(videoSettings.PianoRollZoom) ? videoSettings.PianoRollZoom : project.UsesFamiTrackerTempo ? "100%" : "25%", PianoRollZoomTooltip); // 13
+                        page.AddDropDownList(PianoRollZoomLabel.Colon, videoPianoZoomLevels, videoPianoZoomLevels.Contains(videoSettings.PianoRollZoom) ? videoSettings.PianoRollZoom : project.UsesFamiTrackerTempo ? "100%" : "25%", PianoRollZoomTooltip); // 13
                         page.AddNumericUpDown(PianoRollNumRowsLabel.Colon, videoSettings.PianoRollRows >= 1 ? videoSettings.PianoRollRows : int.Max(1, Utils.DivideAndRoundUp(numActiveChannels, 8)), 1, 16, 1, PianoRollNumRowsTooltip); // 14
-                        page.AddDropDownList(PianoRollPerspectiveLabel.Colon, pianoPerspectives, pianoPerspectives.Contains(videoSettings.PianoRollPerspective) ? videoSettings.PianoRollPerspective : "60°", PianoRollPerspectiveTooltip); // 15
+                        page.AddDropDownList(PianoRollPerspectiveLabel.Colon, videoPianoPerspectives, videoPianoPerspectives.Contains(videoSettings.PianoRollPerspective) ? videoSettings.PianoRollPerspective : "60°", PianoRollPerspectiveTooltip); // 15
                         page.AddCheckBox(VideoOverlayRegistersLabel.Colon, videoSettings.OverlayRegisters, VideoOverlayRegistersTooltip); // 16
                         page.AddCheckBox(StereoLabel.Colon, videoSettings.Stereo || project.OutputsStereoAudio, StereoTooltip); // 17
                         page.AddGrid(ChannelsLabel, new[] {
@@ -497,7 +511,6 @@ namespace FamiStudio
                     break;
                 case ExportFormat.Nsf:
                     var nsfSettings = project.NsfExportConfig;
-                    var nsfFormats  = NsfExportConfig.Formats;
                     var nsfModes    = Localization.ToStringArray(MachineType.LocalizedNames);
                     var nsfMap      = project.NsfExportConfig.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
                     bool[] nsfBools = project.Songs.Select(s => !nsfMap.ContainsKey(s.Id) || nsfMap[s.Id]).ToArray();
@@ -519,14 +532,12 @@ namespace FamiStudio
                         var romSettings = project.RomFdsExportConfig;
                         var romName     = !string.IsNullOrEmpty(romSettings.Name)   ? romSettings.Name   : project.Name;
                         var romAuthor   = !string.IsNullOrEmpty(romSettings.Artist) ? romSettings.Artist : project.Author;
-                        var romTypes    = RomFdsExportConfig.Types;
-                        var romModes    = RomFdsExportConfig.Modes;
                         var romMap      = romSettings.SongList.ToDictionary(s => s.SongId, s => s.Enabled);
                         bool[] romBools = project.Songs.Select(s => romMap.ContainsKey(s.Id) ? romMap[s.Id] : true).ToArray();
-                        page.AddDropDownList(TypeLabel.Colon, romTypes, !project.UsesFdsExpansion ? FormatRomMessage : romTypes.Contains(romSettings.Type) ? romSettings.Type : FormatFdsMessage, RomFdsFormatTooltip); // 0
+                        page.AddDropDownList(TypeLabel.Colon, romFdsTypes, !project.UsesFdsExpansion ? FormatRomMessage : romFdsTypes.Contains(romSettings.Type) ? romSettings.Type : FormatFdsMessage, RomFdsFormatTooltip); // 0
                         page.AddTextBox(NameLabel.Colon, romName.Substring(0, Math.Min(28, romName.Length)), 28); // 1
                         page.AddTextBox(ArtistLabel.Colon, romAuthor.Substring(0, Math.Min(28, romAuthor.Length)), 28); // 2
-                        page.AddDropDownList(ModeLabel.Colon, romModes, romModes.Contains(romSettings.Mode) ? romSettings.Mode : project.PalMode ? "PAL" : "NTSC", MachineTooltip); // 3
+                        page.AddDropDownList(ModeLabel.Colon, romFdsModes, romFdsModes.Contains(romSettings.Mode) ? romSettings.Mode : project.PalMode ? "PAL" : "NTSC", MachineTooltip); // 3
                         page.AddCheckBoxList(Platform.IsDesktop ? null : SongsLabel, songNames, romBools, SongListTooltip, 12); // 4
                         page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[3])); // 5
                         page.SetPropertyEnabled(0, project.UsesFdsExpansion);
@@ -641,7 +652,7 @@ namespace FamiStudio
                     page.AddTextBox(TrackTitleEnglishLabel.Colon, !string.IsNullOrEmpty(vgmSettings.TrackTitle) ? vgmSettings.TrackTitle : page.GetPropertyValue<string>(VGMSongSelect), 0, false, TrackTitleEnglishTooltip); // 1/2
                     page.AddTextBox(GameNameEnglishLabel.Colon, !string.IsNullOrEmpty(vgmSettings.GameName) ? vgmSettings.GameName : project.Name, 0, false, GameNameEnglishTooltip); // 2/3
                     page.AddTextBox(SystemEnglishLabel.Colon, !string.IsNullOrEmpty(vgmSettings.System) ? vgmSettings.System :
-                    VgmExportConfig.Systems[project.PalMode ? 1 : 0] +
+                    vgmSystems[project.PalMode ? 1 : 0] +
                     (project.UsesVrc7Expansion ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Vrc7)}" : "") +
                     (project.UsesFdsExpansion ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Fds)}" : "") +
                     (project.UsesS5BExpansion ? $" + {ExpansionType.GetLocalizedName(ExpansionType.S5B)}" : "") +
@@ -733,19 +744,19 @@ namespace FamiStudio
                         props.SetDropDownListIndex(0, VideoMode.Oscilloscope);
                         props.SetDropDownListIndex(1, project.Songs.IndexOf(app.SelectedSong));
                         props.SetDropDownListIndex(2, 0); // 1080p landscape.
-                        props.SetDropDownListIndex(3, Array.IndexOf(VideoExportConfig.FrameRates, "50/60 FPS"));
-                        props.SetDropDownListIndex(4, Array.IndexOf(VideoExportConfig.AudioBitRates, "192"));
-                        props.SetDropDownListIndex(5, Array.IndexOf(VideoExportConfig.VideoBitRates, "8000"));
+                        props.SetDropDownListIndex(3, Array.IndexOf(videoFrameRates, "50/60 FPS"));
+                        props.SetDropDownListIndex(4, Array.IndexOf(videoAudioBitRates, "192"));
+                        props.SetDropDownListIndex(5, Array.IndexOf(videoVideoBitRates, "8000"));
                         props.SetPropertyValue(6, settings.LoopCount);
                         props.SetPropertyValue(7, settings.Delay);
                         props.SetPropertyValue(8, int.Max(1, Utils.DivideAndRoundUp(channelCount, 8)));
                         props.SetPropertyValue(9, settings.OscWindow);
                         props.SetPropertyValue(10, settings.OscThickness);
                         props.SetDropDownListIndex(11, OscilloscopeColorType.Instruments);
-                        props.SetDropDownListIndex(12, Array.IndexOf(VideoExportConfig.PianoRollWidths, "Auto"));
-                        props.SetPropertyValue(13, Array.IndexOf(VideoExportConfig.PianoRollZoomLevels, project.UsesFamiTrackerTempo ? "100%" : "25%"));
+                        props.SetDropDownListIndex(12, Array.IndexOf(videoPianoWidths, "Auto"));
+                        props.SetPropertyValue(13, Array.IndexOf(videoPianoZoomLevels, project.UsesFamiTrackerTempo ? "100%" : "25%"));
                         props.SetPropertyValue(14, int.Max(1, Utils.DivideAndRoundUp(channelCount, 8)));
-                        props.SetDropDownListIndex(15, Array.IndexOf(VideoExportConfig.PianoRollPercpectives, "60°"));
+                        props.SetDropDownListIndex(15, Array.IndexOf(videoPianoPerspectives, "60°"));
                         props.SetPropertyValue(16, settings.OverlayRegisters);
                         props.SetPropertyValue(17, settings.Stereo || project.OutputsStereoAudio);
                         props.UpdateGrid(18, GetDefaultChannelsGridData(true, true, app.SelectedSong, out _));
@@ -885,8 +896,8 @@ namespace FamiStudio
 
                         props.SetDropDownListIndex(0, project.Songs.IndexOf(app.SelectedSong));
                         props.SetDropDownListIndex(1, Array.IndexOf(AudioFormatType.Names, "WAV"));
-                        props.SetDropDownListIndex(2, Array.IndexOf(AudioExportConfig.SampleRates, "44100"));
-                        props.SetDropDownListIndex(3, Array.IndexOf(AudioExportConfig.BitRates, "192"));
+                        props.SetDropDownListIndex(2, Array.IndexOf(audioSampleRates, "44100"));
+                        props.SetDropDownListIndex(3, Array.IndexOf(audioBitRates, "192"));
                         props.SetPropertyValue(4, LoopNTimesOption);
                         props.SetPropertyValue(5, settings.LoopCount);
                         props.SetPropertyValue(6, settings.Duration);
@@ -917,7 +928,7 @@ namespace FamiStudio
                         props.SetPropertyValue(0, project.Name);
                         props.SetPropertyValue(1, project.Author);
                         props.SetPropertyValue(2, project.Copyright);
-                        props.SetPropertyValue(3, Array.IndexOf(NsfExportConfig.Formats, "NSF"));
+                        props.SetPropertyValue(3, Array.IndexOf(nsfFormats, "NSF"));
                         props.SetDropDownListIndex(4, project.PalMode ? MachineType.PAL : MachineType.NTSC);
                         props.UpdateCheckBoxList(5, GetSongNames(), trues);
                     }
@@ -939,7 +950,7 @@ namespace FamiStudio
                         bool[] trues = new bool[project.Songs.Count];
                         Array.Fill(trues, true);
 
-                        props.SetDropDownListIndex(0, Array.IndexOf(RomFdsExportConfig.Types, project.UsesFdsExpansion ? FormatFdsMessage : FormatRomMessage));
+                        props.SetDropDownListIndex(0, Array.IndexOf(romFdsTypes, project.UsesFdsExpansion ? FormatFdsMessage : FormatRomMessage));
                         props.SetPropertyValue(1, project.Name);
                         props.SetPropertyValue(2, project.Author);
                         props.SetDropDownListIndex(3, project.PalMode ? MachineType.PAL : MachineType.NTSC);
@@ -1758,7 +1769,7 @@ namespace FamiStudio
                         project.ResetVgmExportSettings();
 
                         var settings = project.VgmExportConfig;
-                        var defName  = VgmExportConfig.Systems[project.PalMode ? 1 : 0] +
+                        var defName  = vgmSystems[project.PalMode ? 1 : 0] +
                             (project.UsesVrc7Expansion  ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Vrc7)}" : "") +
                             (project.UsesFdsExpansion   ? $" + {ExpansionType.GetLocalizedName(ExpansionType.Fds)}"  : "") +
                             (project.UsesS5BExpansion   ? $" + {ExpansionType.GetLocalizedName(ExpansionType.S5B)}"  : "") +
