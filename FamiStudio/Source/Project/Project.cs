@@ -3143,6 +3143,7 @@ namespace FamiStudio
         {
             buffer.Serialize(ref format);
             buffer.Serialize(ref mode);
+            buffer.Serialize(ref include);
 
             var songCount = songList.Count;
             buffer.Serialize(ref songCount);
