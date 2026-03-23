@@ -196,7 +196,7 @@ namespace FamiStudio
 
                             if (mapping.OverrideDmcInitialValue)
                                 mappingStr += $"{GenerateAttribute("DmcInitialValue", mapping.DmcInitialValueDiv2)}";
-                            else
+                            else if (mapping.Sample.DmcInitialValueDiv2 != 32)
                                 mappingStr += $"{GenerateAttribute("DmcSampleInitialValue", mapping.Sample.DmcInitialValueDiv2)}";   
 
                             lines.Add(mappingStr);
