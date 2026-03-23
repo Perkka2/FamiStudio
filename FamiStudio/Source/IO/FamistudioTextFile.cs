@@ -196,6 +196,8 @@ namespace FamiStudio
 
                             if (mapping.OverrideDmcInitialValue)
                                 mappingStr += $"{GenerateAttribute("DmcInitialValue", mapping.DmcInitialValueDiv2)}";
+                            else
+                                mappingStr += $"{GenerateAttribute("DmcSampleInitialValue", mapping.Sample.DmcInitialValueDiv2)}";   
 
                             lines.Add(mappingStr);
                         }
@@ -602,6 +604,10 @@ namespace FamiStudio
                                 {
                                     mapping.OverrideDmcInitialValue = true;
                                     mapping.DmcInitialValueDiv2 = byte.Parse(dmcInitialStr);
+                                }
+                                else if (parameters.TryGetValue("DmcSampleInitialValue", out var dmcSampleInitialStr))
+                                {
+                                    mapping.Sample.DmcInitialValueDiv2 = byte.Parse(dmcSampleInitialStr);
                                 }
                             }
                             break;
