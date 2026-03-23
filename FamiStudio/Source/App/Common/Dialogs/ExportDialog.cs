@@ -518,7 +518,7 @@ namespace FamiStudio
                     page.AddTextBox(ArtistLabel.Colon, !string.IsNullOrEmpty(nsfSettings.Artist) ? nsfSettings.Artist : project.Author, 31); // 1
                     page.AddTextBox(CopyrightLabel.Colon, !string.IsNullOrEmpty(nsfSettings.Copyright) ? nsfSettings.Copyright : project.Copyright, 31); // 2
                     page.AddDropDownList(FormatLabel.Colon, nsfFormats, nsfFormats.Contains(nsfSettings.Format) ? nsfSettings.Format : "NSF", NsfFormatTooltip); // 3
-                    page.AddDropDownList(ModeLabel.Colon, nsfModes, nsfModes.Contains(nsfSettings.Mode) ? nsfSettings.Mode : project.PalMode ? nsfModes[MachineType.PAL] : nsfModes[MachineType.NTSC], MachineTooltip); // 4
+                    page.AddDropDownList(ModeLabel.Colon, nsfModes, nsfModes.Contains(nsfSettings.Mode) ? nsfSettings.Mode : nsfModes[project.PalMode ? MachineType.PAL : MachineType.NTSC], MachineTooltip); // 4
                     page.AddCheckBoxList(Platform.IsDesktop ? null : SongsLabel, songNames, nsfBools, SongListTooltip, 12); // 5
                     page.AddButton(null, ResetDefaultsLabel.Format(ExportFormatNames[2])); // 6
 #if DEBUG
