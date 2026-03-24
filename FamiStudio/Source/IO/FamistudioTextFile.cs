@@ -98,7 +98,7 @@ namespace FamiStudio
 
                 Debug.Assert(!sample.HasAnyProcessingOptions);
 
-                lines.Add($"\tDPCMSample{GenerateAttribute("Name", sample.Name)}{ConditionalGenerateAttribute("Color", sample.Color.ToHexString(), !noColors)}{GenerateAttributeIfNonEmpty("Folder", sample.FolderName)}{GenerateAttribute("Data", String.Join("", sample.ProcessedData.Select(x => $"{x:x2}")))}");
+                lines.Add($"\tDPCMSample{GenerateAttribute("Name", sample.Name)}{ConditionalGenerateAttribute("Color", sample.Color.ToHexString(), !noColors)}{GenerateAttributeIfNonEmpty("Folder", sample.FolderName)}{GenerateAttribute("InitialValue", sample.DmcInitialValueDiv2)}{GenerateAttribute("Data", String.Join("", sample.ProcessedData.Select(x => $"{x:x2}")))}");
             }
 
             // Instruments
@@ -196,8 +196,6 @@ namespace FamiStudio
 
                             if (mapping.OverrideDmcInitialValue)
                                 mappingStr += $"{GenerateAttribute("DmcInitialValue", mapping.DmcInitialValueDiv2)}";
-                            else if (mapping.Sample.DmcInitialValueDiv2 != 32)
-                                mappingStr += $"{GenerateAttribute("DmcSampleInitialValue", mapping.Sample.DmcInitialValueDiv2)}";   
 
                             lines.Add(mappingStr);
                         }
@@ -502,6 +500,8 @@ namespace FamiStudio
                                 sample.FolderName = folderName;
                             if (parameters.TryGetValue("Color", out var hexColor))
                                 sample.Color = Theme.EnforceThemeColor(Color.FromHexString(hexColor));
+                            if (parameters.TryGetValue("InitialValue", out var initialValue))
+                                sample.DmcInitialValueDiv2 = int.Parse(initialValue);
                             break;
                         }
                         case "Instrument":
@@ -604,10 +604,6 @@ namespace FamiStudio
                                 {
                                     mapping.OverrideDmcInitialValue = true;
                                     mapping.DmcInitialValueDiv2 = byte.Parse(dmcInitialStr);
-                                }
-                                else if (parameters.TryGetValue("DmcSampleInitialValue", out var dmcSampleInitialStr))
-                                {
-                                    mapping.Sample.DmcInitialValueDiv2 = byte.Parse(dmcSampleInitialStr);
                                 }
                             }
                             break;
