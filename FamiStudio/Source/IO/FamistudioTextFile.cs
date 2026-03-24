@@ -500,7 +500,7 @@ namespace FamiStudio
                                 sample.FolderName = folderName;
                             if (parameters.TryGetValue("Color", out var hexColor))
                                 sample.Color = Theme.EnforceThemeColor(Color.FromHexString(hexColor));
-                            if (parameters.TryGetValue("InitialValue", out var initialValue))
+                            if (parameters.TryGetValue("DmcInitialValue", out var initialValue))
                                 sample.DmcInitialValueDiv2 = int.Parse(initialValue);
                             break;
                         }
