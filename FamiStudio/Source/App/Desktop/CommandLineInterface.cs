@@ -144,6 +144,7 @@ namespace FamiStudio
             Console.WriteLine($"  -nsf-import-start-frame:<frame> : Frame to skips before starting the NSF capture (default:0).");
             Console.WriteLine($"  -nsf-import-reverse-dpcm : Reverse bits of DPCM samples (default:disabled).");
             Console.WriteLine($"  -nsf-import-preserve-padding : Preserve 1-byte of padding after DPCM samples (default:disabled).");
+            Console.WriteLine($"  -nsf-import-dmc-values : Import the initial DMC values for samples used in the song (default:enabled).");
             Console.WriteLine($"  -nsf-import-tuning:<tuning> : Tuning frequency in Hz for the original song (default:440).");
             Console.WriteLine($"");
             Console.WriteLine($"WAV export specific options");
@@ -229,15 +230,16 @@ namespace FamiStudio
             }
             else if (filename.ToLower().EndsWith("nsf") || filename.ToLower().EndsWith("nsfe"))
             {
-                var songIndex   = ParseOption("nsf-import-song", 0);
-                var duration    = ParseOption("nsf-import-duration", 120);
-                var patternLen  = ParseOption("nsf-import-pattern-length", 256);
-                var startFrame  = ParseOption("nsf-import-start-frame", 0);
-                var reverseDpcm = HasOption("nsf-import-reverse-dpcm");
-                var preservePad = HasOption("nsf-import-preserve-padding");
-                var tuning      = ParseOption("nsf-import-tuning", 440);
+                var songIndex    = ParseOption("nsf-import-song", 0);
+                var duration     = ParseOption("nsf-import-duration", 120);
+                var patternLen   = ParseOption("nsf-import-pattern-length", 256);
+                var startFrame   = ParseOption("nsf-import-start-frame", 0);
+                var reverseDpcm  = HasOption("nsf-import-reverse-dpcm");
+                var preservePad  = HasOption("nsf-import-preserve-padding");
+                var importDmcVal = HasOption("nsf-import-dmc-values");
+                var tuning       = ParseOption("nsf-import-tuning", 440);
                 
-                project = new NsfFile().Load(filename, songIndex, duration, patternLen, startFrame, true, reverseDpcm, preservePad, tuning);
+                project = new NsfFile().Load(filename, songIndex, duration, patternLen, startFrame, true, reverseDpcm, preservePad, importDmcVal, tuning);
             }
 
             if (project == null)

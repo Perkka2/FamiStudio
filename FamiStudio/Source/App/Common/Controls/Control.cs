@@ -30,6 +30,7 @@ namespace FamiStudio
 
         public event PointerEventDelegate PointerDown;
         public event PointerEventDelegate PointerUp;
+        public event PointerEventDelegate MouseDoubleClick;
         public event PointerEventDelegate PointerMove;
         public event PointerEventDelegate TouchClick;
         public event PointerEventDelegate TouchDoubleClick;
@@ -117,6 +118,7 @@ namespace FamiStudio
             if (supportsDoubleClick)
             {
                 OnMouseDoubleClick(e);
+                MouseDoubleClick?.Invoke(this, e);
             }
             else
             {

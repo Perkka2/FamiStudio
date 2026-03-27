@@ -885,6 +885,7 @@ famistudio_vrc6_saw_prev_hi    = famistudio_vrc6_saw_volume
 famistudio_chn_vrc7_prev_hi:      .res 6
 famistudio_chn_vrc7_patch:        .res 6
 famistudio_chn_vrc7_trigger:      .res 6 ; bit 0 = new note triggered, bit 7 = note released.
+famistudio_chn_vrc7_sustain:      .res 1 ; sustain bit overrides release.
 .endif
 .if FAMISTUDIO_EXP_EPSM
 .if FAMISTUDIO_EXP_EPSM_RHYTHM_CNT > 0
@@ -2450,8 +2451,18 @@ famistudio_update_vrc7_channel_sound:
     sta FAMISTUDIO_VRC7_REG_SEL
     jsr famistudio_vrc7_wait_reg_select
 
+    lda famistudio_chn_vrc7_sustain
+    bmi @override_stop
     lda famistudio_chn_vrc7_prev_hi, y
-    and #$cf ; Remove trigger + sustain
+    and #$cf
+    bne @apply_cut
+
+@override_stop:
+    lda famistudio_chn_vrc7_prev_hi, y
+    and #$ef
+    ora #$20 ; Set sustain flag to override
+
+@apply_cut:
     sta famistudio_chn_vrc7_prev_hi, y
     sta FAMISTUDIO_VRC7_REG_WRITE
     jsr famistudio_vrc7_wait_reg_write
@@ -2571,7 +2582,7 @@ famistudio_update_vrc7_channel_sound:
 
     txa
     asl
-    ora #$20
+    ora famistudio_chn_vrc7_sustain
     ora @pitch+1
     ora @tmp
     sta famistudio_chn_vrc7_prev_hi, y
@@ -4988,12 +4999,14 @@ famistudio_set_vrc7_instrument:
     @load_patch:
     ldx @chan_idx
     lda (@ptr),y
+    sta famistudio_chn_vrc7_sustain ; Release override.
+    iny
+    lda (@ptr),y
     sta famistudio_chn_vrc7_patch-FAMISTUDIO_VRC7_CH0_IDX,x
     bne @done
 
     @read_custom_patch:
     ldx #0
-    iny
     iny
     @read_patch_loop:
         stx FAMISTUDIO_VRC7_REG_SEL
@@ -6533,6 +6546,7 @@ famistudio_sfx_sample_play:
 
 sample_play:
 
+    @update_flags = famistudio_r1
     @tmp = famistudio_r3
     @sample_index = famistudio_r3
     @sample_data_ptr = famistudio_ptr1
@@ -6594,6 +6608,8 @@ sample_play:
 @read_dmc_initial_value:
 .endif    
 
+    bit @update_flags
+    bmi @start_dmc
     lda (@sample_data_ptr),y ; Initial DMC counter
     sta FAMISTUDIO_APU_DMC_RAW
 

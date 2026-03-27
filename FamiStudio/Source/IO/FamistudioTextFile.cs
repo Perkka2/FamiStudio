@@ -98,7 +98,7 @@ namespace FamiStudio
 
                 Debug.Assert(!sample.HasAnyProcessingOptions);
 
-                lines.Add($"\tDPCMSample{GenerateAttribute("Name", sample.Name)}{ConditionalGenerateAttribute("Color", sample.Color.ToHexString(), !noColors)}{GenerateAttributeIfNonEmpty("Folder", sample.FolderName)}{GenerateAttribute("Data", String.Join("", sample.ProcessedData.Select(x => $"{x:x2}")))}");
+                lines.Add($"\tDPCMSample{GenerateAttribute("Name", sample.Name)}{ConditionalGenerateAttribute("Color", sample.Color.ToHexString(), !noColors)}{GenerateAttributeIfNonEmpty("Folder", sample.FolderName)}{GenerateAttribute("DmcInitialValue", sample.DmcInitialValueDiv2)}{GenerateAttribute("Data", String.Join("", sample.ProcessedData.Select(x => $"{x:x2}")))}");
             }
 
             // Instruments
@@ -161,6 +161,9 @@ namespace FamiStudio
                             for (int i = 0; i < 8; i++)
                                 instrumentLine += GenerateAttribute($"Vrc7Reg{i}", instrument.Vrc7PatchRegs[i]);
                         }
+
+                        instrumentLine += GenerateAttribute($"Vrc7OverrideRelease", instrument.Vrc7OverrideRelease);
+                        instrumentLine += GenerateAttribute($"Vrc7OverrideStop", instrument.Vrc7OverrideStop);
                     }
                     else if (instrument.IsEpsm)
                     {
@@ -497,6 +500,8 @@ namespace FamiStudio
                                 sample.FolderName = folderName;
                             if (parameters.TryGetValue("Color", out var hexColor))
                                 sample.Color = Theme.EnforceThemeColor(Color.FromHexString(hexColor));
+                            if (parameters.TryGetValue("DmcInitialValue", out var initialValue))
+                                sample.DmcInitialValueDiv2 = int.Parse(initialValue);
                             break;
                         }
                         case "Instrument":
@@ -556,6 +561,9 @@ namespace FamiStudio
                                            instrument.Vrc7PatchRegs[i] = byte.Parse(regStr);
                                     }
                                 }
+
+                                if (parameters.TryGetValue("Vrc7OverrideRelease", out var vrc7OverrideRelease)) instrument.Vrc7OverrideRelease = bool.Parse(vrc7OverrideRelease);
+                                if (parameters.TryGetValue("Vrc7OverrideStop",    out var vrc7OverrideStop))    instrument.Vrc7OverrideStop  = bool.Parse(vrc7OverrideStop);
                             }
                             else if (instrument.IsEpsm)
                             {
@@ -782,6 +790,17 @@ namespace FamiStudio
                 // Post-load
                 foreach (var inst in project.Instruments)
                 {
+                    // Ensure all envelopes are within valid range (in the event of a garbage text file).
+                    for (int i = 0; i < EnvelopeType.Count; i++)
+                    {
+                        var env = inst.Envelopes[i];
+                        if (env != null && !env.ValuesInValidRange(inst, i))
+                        {
+                            Log.LogMessage(LogSeverity.Warning, $"Envelope '{EnvelopeType.LocalizedNames[i]}' of instrument '{inst.Name}' has values outside of the supported range, clamping.");
+                            env.ClampToValidRange(inst, i);
+                        }
+                    }
+
                     inst.PerformPostLoadActions();
                 }
 
@@ -791,7 +810,8 @@ namespace FamiStudio
 
                 ResetCulture();
 
-                return project;
+                // Prevent a crash with broken text files (all projects must have at least one song).
+                return project.Songs.Count > 0 ? project : null;
             }
 #if !DEBUG
             catch (Exception e)

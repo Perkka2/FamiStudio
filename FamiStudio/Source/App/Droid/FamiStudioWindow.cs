@@ -83,6 +83,7 @@ namespace FamiStudio
         public BaseFileActivity CurrentFileActivity => currentFileActivity;
         public bool IsAsyncFileActivityInProgress => currentFileActivity != null;
         public bool IsAsyncDialogInProgress => IsAsyncFileActivityInProgress || (container != null && container.IsDialogActive);
+        public bool IsOutOfProcessDialogInProgress => false;
 
         public FamiStudio FamiStudio => famistudio;
         public Toolbar ToolBar => container.ToolBar;

@@ -392,6 +392,24 @@ namespace FamiStudio
         int hoverEffectIndex = -1;
         int hoverTopLeftButton = -1;
 
+        // Scale
+        int scaleType = (int)ScaleType.Major;
+        int rootNoteIdx = 0;
+
+        enum ScaleType
+        {
+            Major,
+            Minor,
+            Dorian,
+            Phrygian,
+            Lydian,
+            Mixolydian,
+            Locrian,
+            MelodicMinor,
+            HarmonicMinor,
+            DoubleHarmonic
+        };
+
         enum GizmoAction
         {
             ResizeNote,
@@ -566,6 +584,16 @@ namespace FamiStudio
         LocalizedString SnapToBeatsContext;
         LocalizedString SnapToBeatContextTooltip;
         LocalizedString SnapToBeatsContextTooltip;
+        LocalizedString ScaleMajor;
+        LocalizedString ScaleMinor;
+        LocalizedString ScaleDorian;
+        LocalizedString ScalePhrygian;
+        LocalizedString ScaleLydian;
+        LocalizedString ScaleMixolydian;
+        LocalizedString ScaleLocrian;
+        LocalizedString ScaleMelodicMinor;
+        LocalizedString ScaleHarmonicMinor;
+        LocalizedString ScaleDoubleHarmonic;
 
         // tooltips
         LocalizedString SeekTooltip;
@@ -1209,6 +1237,28 @@ namespace FamiStudio
                     mobileEraseGeometry[i * 2 + 1] = MathF.Sin(angle) * noteSizeY * 1.5f;
                 }
             }
+        }
+
+        private bool IsNoteOffScale(int key)
+        {
+            // Apply offset.
+            key = key >= rootNoteIdx ? key - rootNoteIdx : key + 12 - rootNoteIdx;
+
+            return (ScaleType)scaleType switch
+            {
+                ScaleType.Minor          => key == 1 || key == 4 || key == 6 || key == 9 || key == 11,
+                ScaleType.Dorian         => key == 1 || key == 4 || key == 6 || key == 8 || key == 11,
+                ScaleType.Phrygian       => key == 2 || key == 4 || key == 6 || key == 9 || key == 11,
+                ScaleType.Lydian         => key == 1 || key == 3 || key == 5 || key == 8 || key == 10,
+                ScaleType.Mixolydian     => key == 1 || key == 3 || key == 6 || key == 8 || key == 11,
+                ScaleType.Locrian        => key == 2 || key == 4 || key == 7 || key == 9 || key == 11,
+                ScaleType.MelodicMinor   => key == 1 || key == 4 || key == 6 || key == 8 || key == 10,
+                ScaleType.HarmonicMinor  => key == 1 || key == 4 || key == 6 || key == 9 || key == 10,
+                ScaleType.DoubleHarmonic => key == 2 || key == 3 || key == 6 || key == 9 || key == 10,
+
+                // Major scale is default.
+                _ => IsBlackKey(key),
+            };
         }
 
         private bool IsBlackKey(int key)
@@ -2675,8 +2725,18 @@ namespace FamiStudio
                 for (int j = 0; j < 12; j++)
                 {
                     int y = octaveBaseY - j * noteSizeY;
-                    if (!IsBlackKey(j))
-                        r.b.FillRectangle(0, y - noteSizeY, maxX, y, Theme.DarkGreyColor4);
+
+                    // Scales (default C Major for all but channel).
+                    if (editMode == EditionMode.Channel)
+                    {
+                        if (!IsNoteOffScale(j))
+                            r.b.FillRectangle(0, y - noteSizeY, maxX, y, Theme.DarkGreyColor4);
+                    }
+                    else
+                    {
+                        if (!IsBlackKey(j))
+                            r.b.FillRectangle(0, y - noteSizeY, maxX, y, Theme.DarkGreyColor4);
+                    }
                 }
             }
 
@@ -2764,7 +2824,7 @@ namespace FamiStudio
                             highlightNote = song.Channels[editChannel].GetNoteAt(highlightLocation);
                         }
                     }
-                    else if (!ParentWindow.IsAsyncDialogInProgress)
+                    else if (!ParentWindow.IsAsyncDialogInProgress && !ParentWindow.IsOutOfProcessDialogInProgress)
                     {
                         if (HasHighlightedNote() && CaptureOperationRequiresNoteHighlight(captureOperation))
                         {
@@ -3407,7 +3467,7 @@ namespace FamiStudio
 
             if (!outline)
             {
-                if (isFirstPart && attackState != NoteAttackState.NoAttack && sx > noteAttackSizeX + attackIconPosX * 2 + 2)
+                if (activeChannel && isFirstPart && attackState != NoteAttackState.NoAttack && sx > noteAttackSizeX + attackIconPosX * 2 + 2)
                 {
                     if (attackState == NoteAttackState.NoAttackError)
                     {
@@ -5115,7 +5175,7 @@ namespace FamiStudio
 
         private bool AllowGizmos()
         {
-            return  window != null && !window.IsAsyncDialogInProgress;
+            return  window != null && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress;
         }
 
         private List<Gizmo> GetNoteGizmos(out Note note, out NoteLocation location)
@@ -6827,7 +6887,7 @@ namespace FamiStudio
                 NoteLocation.FromAbsoluteNoteIndex(Song, selectionMin),
                 NoteLocation.FromAbsoluteNoteIndex(Song, selectionMax));
 
-            note.Release = note.HasRelease ? 0 : Math.Max(1, note.Duration / 2);
+            note.Release = note.HasRelease ? 0 : Math.Max(1, Math.Min(note.Duration, App.SelectedChannel.GetDistanceToNextNote(location)) / 2);
 
             if (selected)
             {
@@ -6931,6 +6991,11 @@ namespace FamiStudio
                             menu.Add(new ContextMenuOption("MenuSnap", SetSnapContext.Format(SnapResolutionType.Names[factor]), () => { snapResolution = factor; snap = true; MarkDirty(); }));
                     }
 
+                    if (IsSelectionValid())
+                    {
+                        menu.Add(new ContextMenuOption("MenuClearSelection", ClearSelectionContext, () => { ClearSelection(); ClearHighlightedNote(); }));
+                    }
+
                     menu.Add(new ContextMenuOption("MenuSelectNote", SelectNoteRangeContext, () => { SelectSingleNote(noteLocation, mouseLocation, note); }, ContextMenuSeparator.Before));
                 }
                 else
@@ -6939,11 +7004,33 @@ namespace FamiStudio
 
                     if (note != null)
                         menu.Add(new ContextMenuOption("MenuSelectNote", SelectNoteRangeContext, () => { SelectSingleNote(noteLocation, mouseLocation, note); }, ContextMenuSeparator.Before));
-                }
 
-                if (IsSelectionValid())
-                {
-                    menu.Add(new ContextMenuOption("MenuClearSelection", ClearSelectionContext, () => { ClearSelection(); ClearHighlightedNote(); }));
+                    if (IsSelectionValid())
+                    {
+                        menu.Add(new ContextMenuOption("MenuClearSelection", ClearSelectionContext, () => { ClearSelection(); ClearHighlightedNote(); }));
+                    }
+
+                    var scales = new[] { ScaleMajor, ScaleMinor, ScaleDorian, ScalePhrygian, ScaleLydian, ScaleMixolydian, ScaleLocrian, ScaleMelodicMinor, ScaleHarmonicMinor, ScaleDoubleHarmonic };
+                    var roots = new[] { "C", "C# / Db", "D", "D# / Eb", "E", "F", "F# / Gb", "G", "G# / Ab", "A", "A# / Bb", "B" };
+                    var options = new ContextMenuOption[scales.Length + roots.Length];
+
+                    for (var i = 0; i < scales.Length; i++)
+                    {
+                        var j = i; // Important, copy for lamdba.
+                        var name = scales[i];
+
+                        options[i] = new ContextMenuOption(name, tooltip, () => { scaleType = j; }, () => scaleType == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? Platform.IsMobile ? ContextMenuSeparator.MobileBefore : ContextMenuSeparator.Before : ContextMenuSeparator.None);
+                    }
+
+                    for (var i = 0; i < roots.Length; i++)
+                    {
+                        var j = i; // Important, copy for lamdba.
+                        var name = roots[i];
+
+                        options[i + scales.Length] = new ContextMenuOption(name, tooltip, () => { rootNoteIdx = j; }, () => rootNoteIdx == j ? ContextMenuCheckState.Radio : ContextMenuCheckState.None, i == 0 ? Platform.IsMobile ? ContextMenuSeparator.MobileBefore : ContextMenuSeparator.Before : ContextMenuSeparator.None);
+                    }
+
+                    menu.AddRange(options);
                 }
 
                 if (menu.Count > 0)
@@ -9740,7 +9827,7 @@ namespace FamiStudio
             continuouslyFollowing = false;
 
             if ((App.IsPlaying || force) && App.FollowModeEnabled && Settings.FollowSync != Settings.FollowSyncSequencer && !panning && 
-                captureOperation == CaptureOperation.None && editMode == EditionMode.Channel && !window.IsAsyncDialogInProgress)
+                captureOperation == CaptureOperation.None && editMode == EditionMode.Channel && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress)
             {
                 var frame = App.CurrentFrame;
                 var seekX = GetPixelXForAbsoluteNoteIndex(frame);
@@ -9786,7 +9873,7 @@ namespace FamiStudio
             if (App == null)
                 return;
 
-            Debug.Assert(!window.IsAsyncDialogInProgress || captureOperation == CaptureOperation.None);
+            Debug.Assert((!window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress) || captureOperation == CaptureOperation.None);
 
             UpdateCaptureOperation(mouseLastX, mouseLastY, 1.0f, true);
             UpdateFollowMode();

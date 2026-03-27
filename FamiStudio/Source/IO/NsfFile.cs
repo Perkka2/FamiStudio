@@ -544,6 +544,8 @@ namespace FamiStudio
         private Project project;
         private ChannelState[] channelStates;
         private bool preserveDpcmPadding;
+        private bool importDmcValues;
+        private readonly List<int> sampleIdsInitialSet = [];
         private readonly int[] DPCMOctaveOrder = new [] { 4, 5, 3, 6, 2, 7, 1, 0 };
 
         public int GetBestMatchingNote(int period, ushort[] noteTable, out int finePitch)
@@ -871,6 +873,7 @@ namespace FamiStudio
                 var dmc = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_DPCMCOUNTER, 0);
                 var len = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_DPCMSAMPLELENGTH, 0);
                 var dmcActive = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_DPCMACTIVE, 0);
+                var newDelta = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_DPCMDELTAWRITE, 0);
                 var minSampleLen = preserveDpcmPadding ? 1 : 2;
                 var noteTriggeredThisFrame = false;
 
@@ -893,6 +896,15 @@ namespace FamiStudio
                     var sample = project.FindMatchingSample(sampleData);
                     if (sample == null)
                         sample = project.CreateDPCMSampleFromDmcData($"Sample {project.Samples.Count + 1}", sampleData);
+
+                    // If the current sample never had an initial value set and the delta value changed on this
+                    // frame, use the current DMC value as the sample's DMC initial value. Notes with no attack
+                    // could potentially lead to missing the DMC initial value otherwise.
+                    if (importDmcValues && newDelta != 0 && !sampleIdsInitialSet.Contains(sample.Id))
+                    {
+                        sample.DmcInitialValueDiv2 = dmc / 2;
+                        sampleIdsInitialSet.Add(sample.Id);
+                    }
 
                     var loop  = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_DPCMLOOP, 0) != 0;
                     var pitch = NotSoFatso.NsfGetState(nsf, channel.Type, NotSoFatso.STATE_DPCMPITCH, 0);
@@ -942,11 +954,16 @@ namespace FamiStudio
                         var note = channel.GetOrCreatePattern(p).GetOrCreateNoteAt(n);
                         note.Value = (byte)noteValue;
                         note.Instrument = dpcmInst;
+                        note.HasAttack = newDelta != 0;
+
                         if (state.dmc != dmc)
                         {
-                            note.DeltaCounter = (byte)dmc;
+                            // Only set the delta counter if it doesn't already match the initial value, or if there is no attack.
+                            if (!note.HasAttack || !importDmcValues || (note.HasAttack && dmc / 2 != sample.DmcInitialValueDiv2))
+                                note.DeltaCounter = (byte)dmc;
                             state.dmc = dmc;
                         }
+                            
                         hasNote = true;
                         state.state = ChannelState.Triggered;
                         noteTriggeredThisFrame = true;
@@ -1397,7 +1414,7 @@ namespace FamiStudio
             return mask;
         }
 
-        public Project Load(string filename, int songIndex, int duration, int patternLength, int startFrame, bool removeIntroSilence, bool reverseDpcm, bool preserveDpcmPad, int tuning = 440)
+        public Project Load(string filename, int songIndex, int duration, int patternLength, int startFrame, bool removeIntroSilence, bool reverseDpcm, bool preserveDpcmPad, bool importDmcVal, int tuning = 440)
         {
             nsf = NotSoFatso.NsfOpen(filename);
 
@@ -1413,6 +1430,7 @@ namespace FamiStudio
                 return null;
 
             preserveDpcmPadding = preserveDpcmPad;
+            importDmcValues = importDmcVal;
 
             var palSource = (NotSoFatso.NsfIsPal(nsf) & 1) == 1;
             var numFrames = (int)MathF.Round(duration * (palSource ? 50.006982f : 60.098814f));
@@ -1540,12 +1558,49 @@ namespace FamiStudio
             song.InvalidateCumulativePatternCache();
             project.DeleteUnusedInstruments();
 
-            if (reverseDpcm)
+            if (project.Samples.Count > 0)
             {
-                foreach (var sample in project.Samples)
+                // For some imports, truncated versions of the same samples are imported.
+                // Only keep the longer versions instead of having duplicates.
+                var samples = project.Samples;
+                var replace = false;
+
+                for (int i = 0; i < samples.Count; i++)
                 {
-                    sample.ReverseBits = true;            
-                    sample.Process();
+                    for (int j = i + 1; j < samples.Count; j++)
+                    {
+                        var a = samples[i];
+                        var b = samples[j];
+                        var min = Math.Min(a.ProcessedData.Length, b.ProcessedData.Length);
+
+                        if (a.ProcessedData.AsSpan(0, min).SequenceEqual(b.ProcessedData.AsSpan(0, min)))
+                        {
+                            var trunc = a.ProcessedData.Length < b.ProcessedData.Length ? a : b;
+                            var full  = trunc == a ? b : a;
+
+                            project.ReplaceSampleInAllMappings(trunc, full);
+                            replace = true;
+                        }
+                    }
+                }
+
+                // Clean up if any samples were replaced above. keep names sequential.
+                if (replace)
+                {
+                    project.UnmapUnusedSamples();
+                    project.DeleteUnmappedSamples();
+
+                    for (int i = 0; i < samples.Count; i++)
+                        project.RenameSample(samples[i], $"Sample {i + 1}");
+                }
+
+                if (reverseDpcm)
+                {
+                    foreach (var sample in samples)
+                    {
+                        sample.ReverseBits = true;
+                        sample.Process();
+                    }
                 }
             }
 

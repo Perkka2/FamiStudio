@@ -76,6 +76,8 @@ Roughly speaking, the chip generates a carrier frequency, which is then modified
     * **Decay** : Speed of the decay.
     * **Sustain** : Attenuation after decay.
     * **Release** : Speed of release.
+* **Override Release** : Override carrier release with a value of 5.
+* **Override Stop** : Override stop notes, treating them as carrier release with a value of 5.
 * **Modulator Level** : Output level of the modulator.
 * **Feedback** : Feedback applied to the modulator.
 
@@ -94,10 +96,10 @@ The extra envelopes are:
 
 The parameters are:
 
-* **Master Volume** : At full volume the FDS can be significantly louder than the regular channels. The chip also supported 40%, 50% and 66% which makes the sound a lot more balanced.
-* **Wave Preset** : A few preset that you can use to set the waveform envelope.
+* **Master Volume** : At full volume, the FDS can be significantly louder than the regular 2A03/2A07 channels. The chip also supports 40%, 50% and 66% which makes the sound a lot more balanced.
+* **Wave Preset** : A few presets that you can use to set the waveform envelope.
 * **Wave Count** : The number of waveforms the instrument will contain. The maximum amount is 16.
-* **Mod Preset** : A few preset that you can use to set the modulation envelope.
+* **Mod Preset** : A few presets that you can use to set the modulation envelope.
 * **Mod Speed** : The speed of the modulation.
 * **Mod Depth** : The depth of the modulation.
 * **Mod Delay** : A delay, in frames (1/60th of a second) before enabling modulation.

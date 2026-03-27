@@ -577,7 +577,7 @@ namespace FamiStudio
 
         private void CursorPosCallback(IntPtr window, double xpos, double ypos)
         {
-            if (quit)
+            if (quit || IsOutOfProcessDialogInProgress)
                 return;
 
             //Debug.WriteLine($"POS! X={xpos}, Y={ypos}");

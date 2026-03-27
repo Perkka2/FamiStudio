@@ -265,7 +265,7 @@ namespace FamiStudio
 
         public uint ComputeCRC(uint crc = 0)
         {
-            var serializer = new ProjectCrcBuffer(crc);
+            var serializer = new ProjectCrcBuffer(crc, ProjectBufferFlags.IgnoreId);
             Serialize(serializer);
             return serializer.CRC;
         }

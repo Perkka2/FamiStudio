@@ -1373,6 +1373,10 @@ namespace FamiStudio
                     else
                         groove = new[] { noteLength };
 
+                    // At version 19 (FamiStudio 4.5.0), we added serialization of groove padding mode (missing since 3.0.0).
+                    if (buffer.Version >= 19)
+                        buffer.Serialize(ref groovePaddingMode);                    
+
                     for (int i = 0; i < songLength; i++)
                     {
                         var customSettings = patternCustomSettings[i];

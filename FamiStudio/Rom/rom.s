@@ -304,6 +304,7 @@ vectors:
 
 .if FAMISTUDIO_EXP_FDS
 ; FDS BIOS functions
+fds_bios_vint_wait      = $e1b2
 fds_bios_load_files     = $e1f8
 .endif
 
@@ -989,12 +990,16 @@ load_file:
     ; NOTE : In the past ive had issues where the load would never finish if this call
     ; was near a half-page boundary. This resolved itself, but im leaving this comment
     ; here in case it happens again.
+    jsr fds_bios_vint_wait ; Disable NMI before loading (most likely fixes the above).
     jsr fds_bios_load_files
     .word disk_id
     .word load_list
     bne done
 
 load_success:
+    lda #%10001000
+    sta $2000 ; Enable NMI.
+
     .import __SONG_RUN__
     ldy #>__SONG_RUN__
     ldx #<__SONG_RUN__

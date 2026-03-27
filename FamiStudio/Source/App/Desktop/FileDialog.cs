@@ -420,9 +420,15 @@ namespace FamiStudio
                 }
                 else if (mode == Mode.Save)
                 {
+                    var dirName = Path.GetDirectoryName(f);
+
                     // Ensure filename and path are valid (in case name contains directory separators).
-                    if (!string.IsNullOrWhiteSpace(textFile.Text) && Path.Exists(Path.GetDirectoryName(f)))
+                    if (!string.IsNullOrWhiteSpace(textFile.Text) && Path.Exists(dirName))
                     {
+                        // Strip any illegal characters based on the OS.
+                        var invalid = Path.GetInvalidFileNameChars();
+                        f = Path.Combine(dirName, new string(Path.GetFileName(f).Where(c => !invalid.Contains(c)).ToArray()));
+
                         // Force extension.
                         if (!MatchesExtensionList(f, extensions))
                             f += extensions[0].Trim('*');

@@ -655,11 +655,15 @@ namespace FamiStudio
             var showExpIcons = showExpansionIcons && Song.Project.UsesAnyExpansionAudio;
             var atlas = showExpIcons ? bmpExpansions : bmpChannels;
             var selectedChannelIndex = App.SelectedChannelIndex;
+            var selectedInstrument   = App.SelectedInstrument;
 
             for (int i = 0, y = 0; i < Song.Channels.Length; i++)
             {
                 if (channelVisible[i])
                 {
+                    // For higlighting supported instrments
+                    var isInstSupported = Song.Channels[i].SupportsInstrument(selectedInstrument);
+
                     // Icon
                     var isHoverRow = hoverRow == channelToRow[i];
                     var channel = Song.Channels[i];
@@ -671,7 +675,7 @@ namespace FamiStudio
                     // Name
                     var font = i == selectedChannelIndex ? Fonts.FontMediumBold : Fonts.FontMedium;
                     var iconHeight = bmpChannels[0].ElementSize.Height * channelBitmapScale;
-                    c.DrawText(Song.Channels[i].LocalizedName, font, channelNamePosX, y + channelIconPosY, Theme.LightGreyColor2, TextFlags.MiddleLeft, 0, iconHeight);
+                    c.DrawText(Song.Channels[i].LocalizedName, font, channelNamePosX, y + channelIconPosY, Theme.LightGreyColor2.Transparent(isInstSupported ? 255 : 80), TextFlags.MiddleLeft, 0, iconHeight);
 
                     // Force display icon.
                     var ghostHoverOpacity = isHoverRow && (hoverIconMask & 2) != 0 ? 192 : 255;
@@ -680,7 +684,11 @@ namespace FamiStudio
 
                     // Hover
                     if (isHoverRow)
-                        c.FillRectangle(0, y, channelNameSizeX, y + channelSizeY, Theme.MediumGreyColor1);
+                        c.FillRectangle(0, y, channelNameSizeX, y + channelSizeY, Theme.MediumGreyColor1.Transparent(isInstSupported ? 255 : 192));
+
+                    // Darken unsupported channel backgrounds
+                    if (!isInstSupported)
+                        c.FillRectangle(0, y, channelNameSizeX, y + channelSizeY, Theme.BlackColor.Transparent(80));
 
                     y += channelSizeY;
                 }
@@ -1495,7 +1503,7 @@ namespace FamiStudio
                     {
                         if (pattern != null)
                         {
-                            if (ModifierKeys.IsShiftDown)
+                            if (ModifierKeys.IsShiftDown && !ModifierKeys.IsControlDown)
                             {
                                 DeletePattern(location);
                                 return true;
@@ -1884,7 +1892,10 @@ namespace FamiStudio
                     }
                     else
                     {
-                        if (Platform.IsDesktop)
+                        // Right clicking an existing pattern causes the newly selected
+                        // pattern to duplicate / instantiate on top of itself on desktop.
+                        // Workaround by only selecting if selection is clear.
+                        if (Platform.IsDesktop && !IsSelectionValid())
                             SetSelection(location, location);
 
                         menu.Add(new ContextMenuOption("MenuProperties", PatternPropertiesLabel, () => { EditPatternProperties(new Point(x, y), pattern, location, false); }, ContextMenuSeparator.Before));
@@ -2354,7 +2365,7 @@ namespace FamiStudio
             var tmpPatterns = GetSelectedPatterns(out var customSettings);
 
             if (!copy)
-                DeleteSelection(false, customSettings != null && !copy);
+                DeleteSelection(false, customSettings != null && !copy, false);
 
             var duplicatePatternMap = new Dictionary<Pattern, Pattern>();
 
@@ -2451,6 +2462,10 @@ namespace FamiStudio
                         var dragRowIdxStart   = captureRowIdx;
                         var dragRowIdxCurrent = GetRowIndexForCoord(y);
                         var rowIdxDelta = dragRowIdxCurrent - dragRowIdxStart;
+
+                        // No need to proceed if the patterns haven't moved.
+                        if (rowIdxDelta == 0 && patternIdxDelta == 0)
+                            return;
 
                         var copy = ModifierKeys.IsControlDown;
                         var duplicate = copy && ModifierKeys.IsShiftDown || rowIdxDelta != 0;
@@ -2588,7 +2603,7 @@ namespace FamiStudio
             DeleteSelection(true, IsValidTimeOnlySelection());
         }
 
-        private void DeleteSelection(bool trans = true, bool clearCustomSettings = false)
+        private void DeleteSelection(bool trans = true, bool clearCustomSettings = false, bool deleteNotesPastMax = true)
         {
             if (trans)
             {
@@ -2613,7 +2628,9 @@ namespace FamiStudio
             }
 
             Song.InvalidateCumulativePatternCache();
-            Song.DeleteNotesPastMaxInstanceLength();
+
+            if (deleteNotesPastMax)
+                Song.DeleteNotesPastMaxInstanceLength();
 
             if (trans)
             {
@@ -3263,7 +3280,7 @@ namespace FamiStudio
             continuouslyFollowing = false;
 
             if ((App.IsPlaying || force) && App.FollowModeEnabled && Settings.FollowSync != Settings.FollowSyncPianoRoll && !panning && 
-                captureOperation == CaptureOperation.None && !window.IsAsyncDialogInProgress)
+                captureOperation == CaptureOperation.None && !window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress)
             {
                 var frame = App.CurrentFrame;
                 var seekX = GetPixelForNote(App.CurrentFrame);

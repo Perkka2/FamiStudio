@@ -42,7 +42,8 @@ namespace FamiStudio
     {
         None      = 0,
         UndoRedo  = 1,
-        Clipboard = 2
+        Clipboard = 2,
+        IgnoreId  = 4
     };
 
     public class ProjectSaveBuffer : ProjectBuffer
@@ -236,6 +237,7 @@ namespace FamiStudio
         public bool IsWriting => true;
         public bool IsForUndoRedo  => flags.HasFlag(ProjectBufferFlags.UndoRedo);
         public bool IsForClipboard => flags.HasFlag(ProjectBufferFlags.Clipboard);
+        public bool IgnoreId => false;
         public int Version => Project.Version;
     };
 
@@ -472,16 +474,18 @@ namespace FamiStudio
         public bool IsWriting => false;
         public bool IsForUndoRedo  => flags.HasFlag(ProjectBufferFlags.UndoRedo);
         public bool IsForClipboard => flags.HasFlag(ProjectBufferFlags.Clipboard);
+        public bool IgnoreId => false;
         public int Version => version;
     }
     
     public class ProjectCrcBuffer : ProjectBuffer
     {
         private uint crc = 0;
-
-        public ProjectCrcBuffer(uint crc = 0)
+        private ProjectBufferFlags flags = ProjectBufferFlags.None;
+        public ProjectCrcBuffer(uint crc = 0, ProjectBufferFlags flags = ProjectBufferFlags.None)
         {
             this.crc = crc;
+            this.flags = flags;
         }
 
         public uint CRC => crc;
@@ -601,7 +605,7 @@ namespace FamiStudio
             // We pass false here to force serialization of the instrument ID. This fixes merging of identical
             // patterns since notes refer to instruments and we dont want to merge patterns using different
             // instruments.
-            Serialize(ref instrumentId, false);
+            Serialize(ref instrumentId, !IgnoreId);
         }
 
         public void Serialize(ref Arpeggio arpeggio)
@@ -609,7 +613,7 @@ namespace FamiStudio
             int arpeggioId = arpeggio == null ? -1 : arpeggio.Id;
 
             // We pass false here for a similar reason to the instrument serialization above, but for arpeggios.
-            Serialize(ref arpeggioId, false);
+            Serialize(ref arpeggioId, !IgnoreId);
         }
 
         public void Serialize(ref Pattern pattern, Channel channel)
@@ -633,6 +637,7 @@ namespace FamiStudio
         public bool IsWriting => true;
         public bool IsForUndoRedo => false;
         public bool IsForClipboard => false;
+        public bool IgnoreId => flags.HasFlag(ProjectBufferFlags.IgnoreId);
         public int Version => Project.Version;
     };
 }

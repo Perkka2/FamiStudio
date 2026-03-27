@@ -79,6 +79,50 @@ namespace FamiStudio
                 pattern.Notes.TryGetValue(location.NoteIndex, out newNote);
             }
 
+            // Ensure a release or stop taking place after the loop point isn't ignored. ASM doesn't ignore it.
+            if (location.PatternIndex == song.LoopPoint && location.NoteIndex == 0 && newNote == null && note.IsMusical)
+            {
+                // Attempt to find a previous pattern that played a note.
+                for (var p = song.LoopPoint - 1; p >= 0; p--)
+                {
+                    pattern = channel.PatternInstances[p];
+                    if (pattern != null && pattern.HasAnyNotes)
+                    {
+                        // Check if previous note runs into loop point + check for release and duration.
+                        var length = song.GetPatternLength(p);
+                        var count  = pattern.Notes.Count;
+
+                        for (int i = count - 1; i >= 0; i--)
+                        {
+                            // Safety: Abort if collection size has changed.
+                            if (pattern.Notes.Count != count)
+                                break;
+                            
+                            var noteIdx = pattern.Notes.Keys[i];
+                            if (noteIdx < length)
+                            {
+                                var noteValue = pattern.Notes.Values[i];
+                                if (noteValue.IsMusical)
+                                {
+                                    var dist = song.GetPatternStartAbsoluteNoteIndex(location.PatternIndex) - song.GetPatternStartAbsoluteNoteIndex(p, noteIdx);
+                                    if (noteValue.Duration > dist && durationCounter == 0)
+                                    {
+                                        durationCounter = 1 + (noteValue.Duration - dist);
+
+                                        if (noteValue.Release >= dist && releaseCounter == 0)
+                                            releaseCounter = 1 + (noteValue.Release - dist);
+                                    }
+                                }
+
+                                break; // Note found.
+                            }
+                        }
+
+                        break; // Pattern found. We've either found and processed a note or aborted due to the collection size changing.
+                    }
+                }
+            }
+
             var needClone = true;
 
             // Generate a release note if the release counter reaches zero.
@@ -128,7 +172,7 @@ namespace FamiStudio
                         var releaseLocation = location.Advance(song, newNote.Release);
                         // Don't process release that go beyond the end of the song.
                         if (releaseLocation.IsInSong(song))
-                           releaseCounter = newNote.Release;
+                            releaseCounter = newNote.Release;
                     }
 
                     var stopLocation = location.Advance(song, newNote.Duration);
@@ -261,7 +305,13 @@ namespace FamiStudio
                     envelopeValues[EnvelopeType.Arpeggio] = 0;
                 }
 
-                if (noteHasAttack)
+                // DPCM should always retrigger. Attack only affects initial DMC value.
+                if (channelType == ChannelType.Dpcm)
+                {
+                    noteTriggered = true;
+                    resetInstrumentOnNextAttack = false;
+                }
+                else if (noteHasAttack)
                 {
                     instrumentChanged |= resetInstrumentOnNextAttack;
 

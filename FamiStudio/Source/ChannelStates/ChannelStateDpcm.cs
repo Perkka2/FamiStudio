@@ -26,25 +26,29 @@ namespace FamiStudio
                     if (mapping != null)
                     {
                         var sample = mapping.Sample;
-                        if (sample != null)
+                        if (sample != null && sample.ProcessedData.Length > 0)
                         {
                             var dmcInitialValue = 0;
 
-                            // Override by mapping, if enabled.
-                            if (mapping.OverrideDmcInitialValue)
+                            var useDmcInitialValue = note.HasAttack || note.HasDeltaCounter;
+                            if (useDmcInitialValue)
                             {
-                                dmcInitialValue = mapping.DmcInitialValueDiv2 * 2;
-                            }
-                            else
-                            {
-                                dmcInitialValue = sample.DmcInitialValueDiv2 * 2;
-                            }
+                                // Override by mapping, if enabled.
+                                if (mapping.OverrideDmcInitialValue)
+                                {
+                                    dmcInitialValue = mapping.DmcInitialValueDiv2 * 2;
+                                }
+                                else
+                                {
+                                    dmcInitialValue = sample.DmcInitialValueDiv2 * 2;
+                                }
 
-                            // Override with effect, if present.
-                            if (note.HasDeltaCounter)
-                            {
-                                dmcInitialValue = note.DeltaCounter;
-                                note.HasDeltaCounter = false; // HACK : Clear so we don't set multiple times.
+                                // Override with effect, if present.
+                                if (note.HasDeltaCounter)
+                                {
+                                    dmcInitialValue = note.DeltaCounter;
+                                    note.HasDeltaCounter = false; // HACK : Clear so we don't set multiple times.
+                                }
                             }
 
                             lock (DPCMSample.ProcessedDataLock)
@@ -54,7 +58,10 @@ namespace FamiStudio
                                 WriteRegister(NesApu.APU_DMC_START, 0, 4, sample.Id);
                                 WriteRegister(NesApu.APU_DMC_LEN, sample.ProcessedData.Length >> 4);
                                 WriteRegister(NesApu.APU_DMC_FREQ, mapping.Pitch | (mapping.Loop ? 0x40 : 0x00));
-                                WriteRegister(NesApu.APU_DMC_RAW, dmcInitialValue);
+
+                                if (useDmcInitialValue)
+                                    WriteRegister(NesApu.APU_DMC_RAW, dmcInitialValue);
+
                                 WriteRegister(NesApu.APU_SND_CHN, 0x1f);
                             }
 

@@ -765,7 +765,7 @@ namespace FamiStudio
 
         private void UndoRedoManager_PreUndoRedo(TransactionScope scope, TransactionFlags flags)
         {
-            Debug.Assert(!window.IsAsyncDialogInProgress);
+            Debug.Assert(!window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress);
 
             ValidateIntegrity();
 
@@ -788,7 +788,7 @@ namespace FamiStudio
 
         private void UndoRedoManager_PostUndoRedo(TransactionScope scope, TransactionFlags flags)
         {
-            Debug.Assert(!window.IsAsyncDialogInProgress);
+            Debug.Assert(!window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress);
 
             ValidateIntegrity();
 
@@ -2334,7 +2334,7 @@ namespace FamiStudio
         private void ConditionalShowTutorial()
         {
             // Edge case where we open a NSF from the command line and the open dialog is active.
-            if (window.IsAsyncDialogInProgress)
+            if (window.IsAsyncDialogInProgress || window.IsOutOfProcessDialogInProgress)
                 return;
 
             if (tutorialCounter > 0)
@@ -2437,7 +2437,7 @@ namespace FamiStudio
 
         public void Tick(float deltaTime)
         {
-            Debug.Assert(!window.IsAsyncDialogInProgress);
+            Debug.Assert(!window.IsAsyncDialogInProgress && !window.IsOutOfProcessDialogInProgress);
 
             lastTickCurrentFrame = IsPlaying ? songPlayer.PlayPosition : -1;
             averageTickRateMs = Utils.Lerp(averageTickRateMs, deltaTime * 1000.0f, 0.01f);

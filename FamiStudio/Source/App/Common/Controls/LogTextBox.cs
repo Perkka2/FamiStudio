@@ -36,7 +36,7 @@ namespace FamiStudio
             lines.Add(line);
             MarkDirty();
             wrappedLinesDirty = true;
-            UpdateScrollParams();
+            ConditionalUpdateWrappedLines();
             scroll = maxScroll;
         }
 

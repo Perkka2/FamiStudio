@@ -875,14 +875,20 @@ namespace FamiStudio
                     defaultDenom = kv.Key.Item2;
                     defaultTempo = kv.Key.Item3;
 
+                    var ratio = (4.0 / defaultDenom);
+
                     // Setup default song settings.
                     var initialBpm = MicroSecondsToBPM(defaultTempo);
                     var initialTempo = GetClosestMatchingTempo(initialBpm, 4);
 
                     song.ChangeFamiStudioTempoGroove(initialTempo.groove, false);
                     song.SetBeatLength(song.NoteLength * 4);
-                    song.SetDefaultPatternLength(song.BeatLength * defaultNumer * measuresPerPattern);
 
+                    var patternLength = (int)(song.BeatLength * (defaultNumer * ratio) * measuresPerPattern);
+                    if (patternLength > 2048)
+                        Log.LogMessage(LogSeverity.Warning, $"Default pattern length is longer than 2048. Patterns will be truncated. Try reducing measures per pattern.");
+
+                    song.SetDefaultPatternLength(Math.Min(patternLength, 2048));
                     break;
                 }
             }
@@ -925,8 +931,11 @@ namespace FamiStudio
                     var patternBpm = MicroSecondsToBPM(patternInfo.tempo);
                     var patternTempo = GetClosestMatchingTempo(patternBpm, 4);
                     var noteLength = Utils.Min(patternTempo.groove);
-
-                    song.SetPatternCustomSettings(patternIdx, (int)Math.Round(noteLength * 4 * patternInfo.numer * ratio * patternInfo.measureCount), noteLength * 4, patternTempo.groove);
+                    var patternLength = (int)Math.Round(noteLength * 4 * patternInfo.numer * ratio * patternInfo.measureCount);
+                    if (patternLength > 2048)
+                        Log.LogMessage(LogSeverity.Warning, $"Pattern {patternIdx} is more than 2048 notes long, truncating.");
+                    
+                    song.SetPatternCustomSettings(patternIdx, Math.Min(patternLength, 2048), noteLength * 4, patternTempo.groove);
                 }
 
                 if (patternInfos.Count == 256)

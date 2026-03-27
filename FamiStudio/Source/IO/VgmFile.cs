@@ -483,7 +483,12 @@ namespace FamiStudio
         private Project project;
         private ChannelState[] channelStates;
         private bool preserveDpcmPadding;
+        private bool importDmcValues;
         private readonly int[] DPCMOctaveOrder = new[] { 4, 5, 3, 6, 2, 7, 1, 0 };
+
+        // For 2A03 DPCM notes with / without attack + DMC initial values.
+        readonly List<int> framesWithDeltaWrites = [];
+        readonly List<int> sampleIdsInitialSet = [];
 
         int[] apuRegister = new int[0x100];
         int[] apuDecayVolume = new int[0x4];
@@ -929,7 +934,7 @@ namespace FamiStudio
                                 }
                             case NotSoFatso.STATE_DPCMCOUNTER:
                                 {
-                                    return 0;// mWave_TND.bDMCLastDeltaWrite;
+                                    return apuRegister[0x11] & 0x7f;
                                 }
                             case NotSoFatso.STATE_DPCMACTIVE:
                                 {
@@ -1129,6 +1134,7 @@ namespace FamiStudio
                 var dmc = GetState(channel.Type, NotSoFatso.STATE_DPCMCOUNTER, 0);
                 var len = GetState(channel.Type, NotSoFatso.STATE_DPCMSAMPLELENGTH, 0);
                 var dmcActive = GetState(channel.Type, NotSoFatso.STATE_DPCMACTIVE, 0);
+                var noteTriggeredThisFrame = false;
 
                 if (len > 0)
                 {
@@ -1148,6 +1154,17 @@ namespace FamiStudio
                     var sample = project.FindMatchingSample(sampleData);
                     if (sample == null)
                         sample = project.CreateDPCMSampleFromDmcData($"Sample {project.Samples.Count + 1}", sampleData);
+
+                    // If the current sample never had an initial value set and the delta value changed on this
+                    // frame, use the current DMC value as the sample's DMC initial value. Notes with no attack
+                    // could potentially lead to missing the DMC initial value otherwise.
+                    var frame = song.GetPatternStartAbsoluteNoteIndex(p, n);
+                    var attack = framesWithDeltaWrites.Contains(frame);
+                    if (importDmcValues && !sampleIdsInitialSet.Contains(sample.Id) && attack)
+                    {
+                        sample.DmcInitialValueDiv2 = dmc / 2;
+                        sampleIdsInitialSet.Add(sample.Id);
+                    }
 
                     var loop = GetState(channel.Type, NotSoFatso.STATE_DPCMLOOP, 0) != 0;
                     var pitch = GetState(channel.Type, NotSoFatso.STATE_DPCMPITCH, 0);
@@ -1197,13 +1214,17 @@ namespace FamiStudio
                         var note = channel.GetOrCreatePattern(p).GetOrCreateNoteAt(n);
                         note.Value = (byte)noteValue;
                         note.Instrument = dpcmInst;
+                        note.HasAttack = attack;
                         if (state.dmc != dmc)
                         {
-                            note.DeltaCounter = (byte)dmc;
+                            // Only set the delta counter if it doesn't already match the initial value, or if there is no attack.
+                            if (!attack || !importDmcValues || (attack && dmc / 2 != sample.DmcInitialValueDiv2))
+                                note.DeltaCounter = (byte)dmc;
                             state.dmc = dmc;
                         }
                         hasNote = true;
                         state.state = ChannelState.Triggered;
+                        noteTriggeredThisFrame = true;
                     }
                 }
                 else if (dmc != state.dmc)
@@ -1212,7 +1233,7 @@ namespace FamiStudio
                     state.dmc = dmc;
                 }
 
-                if (dmcActive == 0 && state.state == ChannelState.Triggered)
+                if (dmcActive == 0 && state.state == ChannelState.Triggered && !noteTriggeredThisFrame)
                 {
                     channel.GetOrCreatePattern(p).GetOrCreateNoteAt(n).IsStop = true;
                     state.state = ChannelState.Stopped;
@@ -1322,7 +1343,7 @@ namespace FamiStudio
                 {
                     if (state.volume != volume && (volume != 0 || hasTrigger))
                     {
-                        var pattern = channel.GetOrCreatePattern(p).GetOrCreateNoteAt(n).Volume = (byte)volume;
+                        channel.GetOrCreatePattern(p).GetOrCreateNoteAt(n).Volume = (byte)volume;
                         state.volume = volume;
                     }
                 }
@@ -1636,7 +1657,7 @@ namespace FamiStudio
          * Add Possibility to import second 2A03 Squares as MMC5
          * 
          */
-        public Project Load(string filename, int patternLength, int frameSkip, bool adjustClock, bool reverseDpcm, bool preserveDpcmPad, bool ym2149AsEpsm, int tuning = 440)
+        public Project Load(string filename, int patternLength, int frameSkip, bool adjustClock, bool reverseDpcm, bool preserveDpcmPad, bool importDmcVals, bool ym2149AsEpsm, int tuning = 440)
         {
             var vgmFile = System.IO.File.ReadAllBytes(filename);
             if (filename.EndsWith(".vgz"))
@@ -1649,6 +1670,7 @@ namespace FamiStudio
             }
 
             preserveDpcmPadding = preserveDpcmPad;
+            importDmcValues = importDmcVals;
             Array.Fill(clockMultiplier, 1);
             bool pal = false;
             project = new Project();
@@ -1928,9 +1950,15 @@ namespace FamiStudio
 
                         apuRegister[vgmData[1]] = vgmData[2];
 
-                        // Noise decay.
+                        // Noise decay (reset on register writes).
                         if (vgmData[1] == 0x0C || vgmData[1] == 0x0E || vgmData[1] == 0x0F)
-                            apuDecayVolume[3] = 15;
+                        {
+                            apuDecayVolume[3]  = 15;
+                        }
+
+                        // DPCM delta write. We have to keep track of these for later.
+                        if (vgmData[1] == 0x11)
+                            framesWithDeltaWrites.Add(frame);
 
                         // FDS.
                         if ((vgmData[1] >= 0x40 && vgmData[1] <= 0x7F) || (vgmData[1] >= 0x20 && vgmData[1] <= 0x3E))
@@ -2186,12 +2214,49 @@ namespace FamiStudio
             song.InvalidateCumulativePatternCache();
             project.DeleteUnusedInstruments();
 
-            if (reverseDpcm)
+            if (project.Samples.Count > 0)
             {
-                foreach (var sample in project.Samples)
+                // For some imports, truncated versions of the same samples are imported.
+                // Only keep the longer versions instead of having duplicates.
+                var dmcSamples = project.Samples;
+                var replace = false;
+
+                for (int i = 0; i < dmcSamples.Count; i++)
                 {
-                    sample.ReverseBits = true;            
-                    sample.Process();
+                    for (int j = i + 1; j < dmcSamples.Count; j++)
+                    {
+                        var a = dmcSamples[i];
+                        var b = dmcSamples[j];
+                        var min = Math.Min(a.ProcessedData.Length, b.ProcessedData.Length);
+
+                        if (a.ProcessedData.AsSpan(0, min).SequenceEqual(b.ProcessedData.AsSpan(0, min)))
+                        {
+                            var trunc = a.ProcessedData.Length < b.ProcessedData.Length ? a : b;
+                            var full  = trunc == a ? b : a;
+
+                            project.ReplaceSampleInAllMappings(trunc, full);
+                            replace = true;
+                        }
+                    }
+                }
+
+                // Clean up if any samples were replaced above. keep names sequential.
+                if (replace)
+                {
+                    project.UnmapUnusedSamples();
+                    project.DeleteUnmappedSamples();
+
+                    for (int i = 0; i < dmcSamples.Count; i++)
+                        project.RenameSample(dmcSamples[i], $"Sample {i + 1}");
+                }
+
+                if (reverseDpcm)
+                {
+                    foreach (var sample in dmcSamples)
+                    {
+                        sample.ReverseBits = true;
+                        sample.Process();
+                    }
                 }
             }
             

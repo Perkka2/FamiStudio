@@ -55,6 +55,8 @@ namespace FamiStudio
         // VRC7
         private byte   vrc7Patch = Vrc7InstrumentPatch.Bell;
         private byte[] vrc7PatchRegs = new byte[8];
+        private bool   vrc7OverrideRelease;
+        private bool   vrc7OverrideStop;
 
         // EPSM
         private byte   epsmPatch = EpsmInstrumentPatch.Default;
@@ -75,6 +77,8 @@ namespace FamiStudio
         public Envelope[] Envelopes => envelopes;
         public Dictionary<int, DPCMSampleMapping> SamplesMapping => samplesMapping;
         public byte[] Vrc7PatchRegs => vrc7PatchRegs;
+        public bool   Vrc7OverrideRelease { get => vrc7OverrideRelease; set => vrc7OverrideRelease = value; }
+        public bool   Vrc7OverrideStop { get => vrc7OverrideStop; set => vrc7OverrideStop = value; }
         public byte[] EpsmPatchRegs => epsmPatchRegs;
         public string FolderName { get => folderName; set => folderName = value; }
         public Folder Folder => string.IsNullOrEmpty(folderName) ? null : project.GetFolder(FolderType.Instrument, folderName);
@@ -873,9 +877,9 @@ namespace FamiStudio
                 }
             }
 
-            if (IsN163 && n163WavPreset != WavePresetType.Custom)
+            if (IsN163 && n163WavPreset != WavePresetType.Custom && n163WavPreset != WavePresetType.Resample)
                 Debug.Assert(N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset));
-            if (IsFds && fdsWavPreset != WavePresetType.Custom)
+            if (IsFds && fdsWavPreset != WavePresetType.Custom && fdsWavPreset != WavePresetType.Resample)
                 Debug.Assert(FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset));
             if (IsFds && fdsModPreset != WavePresetType.Custom)
                 Debug.Assert(FdsModulationEnvelope.ValidatePreset(EnvelopeType.FdsModulation, fdsModPreset));
@@ -997,6 +1001,19 @@ namespace FamiStudio
                             buffer.Serialize(ref vrc7Patch);
                             for (int i = 0; i < vrc7PatchRegs.Length; i++)
                                 buffer.Serialize(ref vrc7PatchRegs[i]);
+
+                            // At version 19 (FamiStudio 4.5.0), we added release fixes for VRC7.                            
+                            if (buffer.Version >= 19)
+                            {
+                                buffer.Serialize(ref vrc7OverrideRelease);
+                                buffer.Serialize(ref vrc7OverrideStop);
+                            }
+                            else
+                            {
+                                // Avoid breaking old songs.
+                                vrc7OverrideRelease = true;
+                                vrc7OverrideStop  = false;
+                            }
                             break;
 
                         case ExpansionType.EPSM:
@@ -1151,12 +1168,19 @@ namespace FamiStudio
                 {
                     // Revert back presets to "customs" if they no longer match what the code generates.
                     // This is in case we change the code that generates the preset.
-                    if (IsN163 && n163WavPreset != WavePresetType.Custom && !N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset))
-                        n163WavPreset = WavePresetType.Custom;
-                    if (IsFds && fdsWavPreset != WavePresetType.Custom && !FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset))
-                        fdsWavPreset = WavePresetType.Custom;
-                    if (IsFds && fdsModPreset != WavePresetType.Custom && !FdsModulationEnvelope.ValidatePreset(EnvelopeType.FdsModulation, fdsModPreset))
-                        fdsModPreset = WavePresetType.Custom;
+                    if (IsN163)
+                    {
+                        N163WaveformEnvelope.ChunkLength = n163WavSize; // Needed for ValidatePreset.
+                        if (n163WavPreset != WavePresetType.Custom && n163WavPreset != WavePresetType.Resample && !N163WaveformEnvelope.ValidatePreset(EnvelopeType.N163Waveform, n163WavPreset))
+                            n163WavPreset = WavePresetType.Custom;
+                    }
+                    if (IsFds)
+                    {
+                        if (fdsWavPreset != WavePresetType.Custom && fdsWavPreset != WavePresetType.Resample && !FdsWaveformEnvelope.ValidatePreset(EnvelopeType.FdsWaveform, fdsWavPreset))
+                            fdsWavPreset = WavePresetType.Custom;
+                        if (fdsModPreset != WavePresetType.Custom && !FdsModulationEnvelope.ValidatePreset(EnvelopeType.FdsModulation, fdsModPreset))
+                            fdsModPreset = WavePresetType.Custom;
+                    }
                 }
 
                 PerformPostLoadActions();

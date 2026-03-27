@@ -95,21 +95,21 @@ music_data_journey_to_silius:
 	.db $00,$cd,$cc,$c9,$c6,$c3,$00,$05
 
 .samples:
-	.db $00+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0c,$40 ; 00 Sunsoft Bass: A# (Pitch:12)
-	.db $00+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0f,$40 ; 01 Sunsoft Bass: A# (Pitch:15)
-	.db $10+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0d,$40 ; 02 Sunsoft Bass: B (Pitch:13)
-	.db $10+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0e,$40 ; 03 Sunsoft Bass: B (Pitch:14)
-	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$09,$40 ; 04 Sunsoft Bass: C (Pitch:9)
-	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0a,$40 ; 05 Sunsoft Bass: C (Pitch:10)
-	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0c,$40 ; 06 Sunsoft Bass: C (Pitch:12)
-	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0e,$40 ; 07 Sunsoft Bass: C (Pitch:14)
-	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0f,$40 ; 08 Sunsoft Bass: C (Pitch:15)
-	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$08,$40 ; 09 Sunsoft Bass: C# (Pitch:8)
-	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0a,$40 ; 0a Sunsoft Bass: C# (Pitch:10)
-	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0d,$40 ; 0b Sunsoft Bass: C# (Pitch:13)
-	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0e,$40 ; 0c Sunsoft Bass: C# (Pitch:14)
-	.db $40+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0a,$40 ; 0d Sunsoft Bass: D (Pitch:10)
-	.db $40+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0e,$40 ; 0e Sunsoft Bass: D (Pitch:14)
+	.db $00+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0c,$34 ; 00 Sunsoft Bass: A# (Pitch:12)
+	.db $00+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0f,$34 ; 01 Sunsoft Bass: A# (Pitch:15)
+	.db $10+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0d,$34 ; 02 Sunsoft Bass: B (Pitch:13)
+	.db $10+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0e,$34 ; 03 Sunsoft Bass: B (Pitch:14)
+	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$09,$34 ; 04 Sunsoft Bass: C (Pitch:9)
+	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0a,$34 ; 05 Sunsoft Bass: C (Pitch:10)
+	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0c,$34 ; 06 Sunsoft Bass: C (Pitch:12)
+	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0e,$34 ; 07 Sunsoft Bass: C (Pitch:14)
+	.db $20+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0f,$34 ; 08 Sunsoft Bass: C (Pitch:15)
+	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$08,$34 ; 09 Sunsoft Bass: C# (Pitch:8)
+	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0a,$34 ; 0a Sunsoft Bass: C# (Pitch:10)
+	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0d,$34 ; 0b Sunsoft Bass: C# (Pitch:13)
+	.db $30+LOW(FAMISTUDIO_DPCM_PTR),$3e,$0e,$34 ; 0c Sunsoft Bass: C# (Pitch:14)
+	.db $40+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0a,$34 ; 0d Sunsoft Bass: D (Pitch:10)
+	.db $40+LOW(FAMISTUDIO_DPCM_PTR),$3f,$0e,$34 ; 0e Sunsoft Bass: D (Pitch:14)
 
 .tempo_env_1_mid:
 	.db $03,$05,$80
@@ -416,22 +416,20 @@ music_data_journey_to_silius:
 .song0ref1438:
 	.db $87, $4d, $1a, $87, $4d, $1a, $87, $4d, $1a, $87, $4d, $1a, $87, $00
 .song0ref1452:
-	.db $87
-.song0ref1453:
-	.db $4b, LOW(.env18), HIGH(.env18)
+	.db $87, $4b, LOW(.env18), HIGH(.env18)
 .song0ref1456:
 	.db $20, $87, $00, $87, $4d, $20, $87, $00, $87, $4b, LOW(.env19), HIGH(.env19), $82
 .song0ref1469:
 	.db $1a, $91, $4b, LOW(.env18), HIGH(.env18), $80, $20, $87, $00, $87, $4d, $20, $87, $00, $87, $4d, $20, $87, $00, $87, $4b
 	.db LOW(.env19), HIGH(.env19), $82, $1a, $91, $4b, LOW(.env18), HIGH(.env18), $80, $20, $87, $00, $87
 .song0ch3loop:
-	.db $4c
+	.db $4c, $4d
 	.db $41, $1c
-	.dw .song0ref1453
+	.dw .song0ref1456
 	.db $4d
 	.db $41, $1c
 	.dw .song0ref1456
-.song0ref1512:
+.song0ref1513:
 	.db $4b, LOW(.env21), HIGH(.env21), $1a, $87, $00, $87, $4d, $1a, $87, $00, $87, $4d, $1a, $87, $00, $87, $4d, $1a, $87, $00
 	.db $87, $4d, $1a, $87, $4d, $1a, $87, $00
 	.db $41, $27
@@ -442,7 +440,7 @@ music_data_journey_to_silius:
 	.db $4d
 	.db $41, $1c
 	.dw .song0ref1456
-.song0ref1552:
+.song0ref1553:
 	.db $4b, LOW(.env21), HIGH(.env21), $1a, $87, $4d, $1a, $87, $4d, $1a, $87, $4d, $1a, $87, $4d, $1a, $87, $4d, $1a, $87, $4d
 	.db $1a, $87, $4d, $1a, $87, $4d
 	.db $41, $10
@@ -457,7 +455,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $15
-	.dw .song0ref1512
+	.dw .song0ref1513
 	.db $41, $27
 	.dw .song0ref1438
 	.db $4d
@@ -467,7 +465,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $10
-	.dw .song0ref1552
+	.dw .song0ref1553
 	.db $4d
 	.db $41, $10
 	.dw .song0ref1428
@@ -481,7 +479,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $15
-	.dw .song0ref1512
+	.dw .song0ref1513
 	.db $41, $27
 	.dw .song0ref1438
 	.db $4d
@@ -491,7 +489,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $10
-	.dw .song0ref1552
+	.dw .song0ref1553
 	.db $4d
 	.db $41, $10
 	.dw .song0ref1428
@@ -505,7 +503,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $15
-	.dw .song0ref1512
+	.dw .song0ref1513
 	.db $41, $27
 	.dw .song0ref1438
 	.db $4d
@@ -516,17 +514,17 @@ music_data_journey_to_silius:
 	.dw .song0ref1456
 	.db $4d, $20, $87, $00, $87, $4b, LOW(.env19), HIGH(.env19), $82, $1a, $91, $4d, $1a, $91, $4d, $1a, $91, $4d, $1a, $91, $00
 	.db $91, $4b, LOW(.env12), HIGH(.env12), $4c, $a6, $20, $91, $00, $91, $4b, LOW(.env18), HIGH(.env18), $80
-.song0ref1712:
+.song0ref1713:
 	.db $20, $87, $00, $c3, $4d, $20, $87, $00, $c3, $4d, $20, $87, $00, $af, $4d, $20, $87, $00, $9b, $4b, LOW(.env19), HIGH(.env19)
 	.db $82, $1a, $91, $4b, LOW(.env18), HIGH(.env18), $80, $20, $87, $00, $9b, $4d
 	.db $41, $16
-	.dw .song0ref1712
+	.dw .song0ref1713
 	.db $4d
 	.db $41, $16
-	.dw .song0ref1712
+	.dw .song0ref1713
 	.db $4d
 	.db $41, $12
-	.dw .song0ref1712
+	.dw .song0ref1713
 	.db $4d, $1a, $91, $4d, $1a, $91, $4b, LOW(.env18), HIGH(.env18), $20, $91, $4d, $20, $91, $4b, LOW(.env19), HIGH(.env19)
 	.db $41, $14
 	.dw .song0ref1469
@@ -537,7 +535,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $15
-	.dw .song0ref1512
+	.dw .song0ref1513
 	.db $41, $27
 	.dw .song0ref1438
 	.db $4d
@@ -547,7 +545,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $10
-	.dw .song0ref1552
+	.dw .song0ref1553
 	.db $4d
 	.db $41, $10
 	.dw .song0ref1428
@@ -561,7 +559,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $15
-	.dw .song0ref1512
+	.dw .song0ref1513
 	.db $41, $27
 	.dw .song0ref1438
 	.db $4d
@@ -571,7 +569,7 @@ music_data_journey_to_silius:
 	.db $41, $1c
 	.dw .song0ref1456
 	.db $41, $10
-	.dw .song0ref1552
+	.dw .song0ref1553
 	.db $4d
 	.db $41, $10
 	.dw .song0ref1428
@@ -579,7 +577,7 @@ music_data_journey_to_silius:
 	.db $41, $1d
 	.dw .song0ref1452
 	.db $41, $10
-	.dw .song0ref1552
+	.dw .song0ref1553
 	.db $4d
 	.db $41, $10
 	.dw .song0ref1428
@@ -589,76 +587,76 @@ music_data_journey_to_silius:
 	.db $42
 	.dw .song0ch3loop
 .song0ch4:
-	.db $52, $9e, $cf, $52, $34
-.song0ref1865:
+	.db $52, $9e, $cf
+.song0ref1864:
 	.db $07, $91, $07, $91, $07, $91, $07, $91, $07, $91, $07, $91, $07, $91, $07, $91
 .song0ch4loop:
-.song0ref1882:
+.song0ref1881:
 	.db $06, $91, $06, $91, $08, $91, $05, $91, $05, $91, $0c, $91, $05, $91, $0c, $91
 	.db $41, $10
-	.dw .song0ref1865
-.song0ref1901:
+	.dw .song0ref1864
+.song0ref1900:
 	.db $0a, $91, $0a, $91, $03, $91, $05, $91, $05, $91, $0c, $91, $05, $91, $0c, $91
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1882
+	.dw .song0ref1881
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1901
+	.dw .song0ref1900
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $07, $91, $07, $91, $07, $91, $07, $91, $07, $91, $07, $91, $07, $91, $06, $91, $06, $91, $06, $91, $06, $91, $06, $91
 	.db $06, $91, $06, $91, $06, $91, $06
-.song0ref1978:
+.song0ref1977:
 	.db $91, $07, $91, $07, $91, $07, $91, $09, $91, $07, $91, $09, $91, $07, $91, $07, $91, $01, $91, $02, $91, $01, $91, $01
 	.db $91, $01, $91, $02, $91, $01, $91, $01, $91, $06, $91, $06, $91, $06, $91, $08, $91, $01, $91, $02, $91, $01, $91, $01
 	.db $91, $07, $91, $09, $91, $07, $91, $07, $91, $07, $91, $09, $91, $07, $91, $07
 	.db $41, $40
-	.dw .song0ref1978
-.song0ref2045:
+	.dw .song0ref1977
+.song0ref2044:
 	.db $91, $05, $91, $05, $91, $0c, $91, $05, $91, $05, $91, $05, $91, $0c, $91, $05, $91, $06, $91, $06, $91, $08, $91, $06
 	.db $91, $06, $91, $06, $91, $08, $91, $06, $91, $07, $91, $07, $91, $09, $91, $07, $91, $09, $91, $07, $91, $07, $91, $09
-.song0ref2093:
+.song0ref2092:
 	.db $91, $07, $91, $07, $91, $09, $91, $07, $91, $07, $91, $09, $91, $07, $91, $09
 	.db $41, $35
-	.dw .song0ref2045
+	.dw .song0ref2044
 	.db $07, $91, $07, $91, $07, $cd, $07, $cd, $07, $cd, $07, $b9, $07, $a5, $07, $91, $09, $91, $07, $91, $01, $cd, $01, $cd
 	.db $01, $b9, $01, $a5, $01, $91, $02, $91, $01, $91, $0b, $cd, $0b, $cd, $0b, $b9, $0b, $a5, $0b, $91, $02, $91, $0b, $91
 	.db $01, $cd, $01, $cd, $01, $b9, $01, $a5, $02, $91, $01, $91, $02
 	.db $41, $10
-	.dw .song0ref2093
-.song0ref2176:
+	.dw .song0ref2092
+.song0ref2175:
 	.db $91, $01, $91, $01, $91, $02, $91, $01, $91, $01, $91, $02, $91, $01, $91, $02, $91, $0b, $91, $0b, $91, $0d, $91, $0b
 	.db $91, $0b, $91, $0d, $91, $0b, $91, $0d
 	.db $41, $11
-	.dw .song0ref2176
+	.dw .song0ref2175
 	.db $07, $91, $07, $91, $09, $91, $07, $91, $07, $91, $09, $91, $07, $91, $09
 	.db $41, $20
-	.dw .song0ref2176
+	.dw .song0ref2175
 	.db $41, $10
-	.dw .song0ref2093
-.song0ref2232:
+	.dw .song0ref2092
+.song0ref2231:
 	.db $91, $07, $91, $07, $91, $07, $91, $09, $91, $07, $91, $07, $91, $02, $91, $09, $91, $01, $91, $01, $91, $01, $91, $02
 	.db $91, $01, $91, $01, $91, $0d, $91, $02, $91, $0e, $91, $0e, $91, $0e, $91, $0f, $91, $0e, $91, $0e, $91, $06, $91, $0f
 	.db $91, $0b, $91, $0b, $91, $0b, $91, $0d, $91, $0b, $91, $0b, $91, $04, $91, $0d
 	.db $41, $40
-	.dw .song0ref2232
+	.dw .song0ref2231
 	.db $41, $11
-	.dw .song0ref2232
+	.dw .song0ref2231
 	.db $07, $91, $07, $91, $09, $91, $07, $91, $07, $91, $09, $91, $07, $91, $09, $91
 	.db $41, $10
-	.dw .song0ref1865
+	.dw .song0ref1864
 	.db $42
 	.dw .song0ch4loop

@@ -146,7 +146,6 @@ void FASTCALL CNSFCore::WriteMemory_pAPU(WORD a,BYTE v)
 	if ((a <= 0x401f) && (a >= 0x401c) && (nExternalSound & EXTSOUND_EPSM))
 		WriteMemory_EPSM(a, v);
 
-
 	switch(a)
 	{
 		//////////////////////////
@@ -309,6 +308,7 @@ void FASTCALL CNSFCore::WriteMemory_pAPU(WORD a,BYTE v)
 		}
 		else
 			mWave_TND.nDMCOutput = v;
+		mWave_TND.bDMCNewDeltaWrite = 1;
 		mWave_TND.bDMCLastDeltaWrite = v;
 		break;
 
@@ -1791,6 +1791,7 @@ void CNSFCore::SetTrack(BYTE track)
 	mWave_TND.nDMCBytesRemaining = 0;
 	mWave_TND.bDMCSampleBufferEmpty = 1;
 	mWave_TND.bDMCDeltaSilent = 1;
+	mWave_TND.bDMCNewDeltaWrite = 0;
 
 	/*	Reset VRC6	*/
 	mWave_VRC6Pulse[0].nVolume = 0;
@@ -2747,6 +2748,7 @@ void CNSFCore::ResetFrameState()
 		VRC7Triggered[i] = 0;
 	mWave_FME07[0].bEnvelopeTriggered = 0;
 	mWave_EPSM[0].bEnvelopeTriggered = 0;
+	mWave_TND.bDMCNewDeltaWrite = 0;
 }
 
 int CNSFCore::GetState(int channel, int state, int sub)
@@ -2829,6 +2831,10 @@ int CNSFCore::GetState(int channel, int state, int sub)
 				case STATE_DPCMACTIVE:
 				{
 					return mWave_TND.bDMCActive;
+				}
+				case STATE_DPCMDELTAWRITE:
+				{
+					return mWave_TND.bDMCNewDeltaWrite;
 				}
 			}
 			break;

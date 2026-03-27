@@ -115,7 +115,7 @@ namespace FamiStudio
         public bool SupportsReleaseNotes  => type != ChannelType.Dpcm;
         public bool SupportsSlideNotes    => type != ChannelType.Dpcm;
         public bool SupportsArpeggios     => type != ChannelType.Dpcm;
-        public bool SupportsNoAttackNotes => type != ChannelType.Dpcm;
+        public bool SupportsNoAttackNotes => true;
 
         public bool SupportsEffect(int effect)
         {
@@ -1477,13 +1477,12 @@ namespace FamiStudio
         // have the proper logic to reload an instrument when there is no attack.
         public static bool CanDisableAttack(int channelType, Instrument i1, Instrument i2)
         {
-            if (i1 == null || i2 == null)
+            if (ChannelType.IsDpcmChannel(channelType))
             {
-                return false;
+                return true;
             }
 
-            // TODO : Maybe no attack on DPCM could mean switch sample without restting DAC? 
-            if (ChannelType.IsDpcmChannel(channelType))
+            if (i1 == null || i2 == null)
             {
                 return false;
             }

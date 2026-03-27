@@ -893,6 +893,7 @@ famistudio_vrc6_saw_prev_hi    = famistudio_vrc6_saw_volume
 famistudio_chn_vrc7_prev_hi:      .ds 6
 famistudio_chn_vrc7_patch:        .ds 6
 famistudio_chn_vrc7_trigger:      .ds 6 ; bit 0 = new note triggered, bit 7 = note released.
+famistudio_chn_vrc7_sustain:      .ds 1 ; sustain bit overrides release.
 .endif
 .if FAMISTUDIO_EXP_EPSM
 .ifgt FAMISTUDIO_EXP_EPSM_RHYTHM_CNT
@@ -2530,8 +2531,18 @@ famistudio_update_vrc7_channel_sound:
     sta FAMISTUDIO_VRC7_REG_SEL
     jsr famistudio_vrc7_wait_reg_select
 
+    lda famistudio_chn_vrc7_sustain
+    bmi .override_stop
     lda famistudio_chn_vrc7_prev_hi, y
-    and #0xcf ; Remove trigger + sustain
+    and #0xcf
+    bne .apply_cut
+
+.override_stop:
+    lda famistudio_chn_vrc7_prev_hi, y
+    and #0xef
+    ora #0x20 ; Set sustain flag to override
+
+.apply_cut:
     sta famistudio_chn_vrc7_prev_hi, y
     sta FAMISTUDIO_VRC7_REG_WRITE
     jsr famistudio_vrc7_wait_reg_write
@@ -2651,7 +2662,7 @@ famistudio_update_vrc7_channel_sound:
 
     txa
     asl
-    ora #0x20
+    ora famistudio_chn_vrc7_sustain
     ora *.pitch+1
     ora *.tmp
     sta famistudio_chn_vrc7_prev_hi, y
@@ -5115,12 +5126,14 @@ famistudio_set_vrc7_instrument:
     .famistudio_set_vrc7_instrument_load_patch:
     ldx *.chan_idx
     lda [*.ptr],y
+    sta famistudio_chn_vrc7_sustain
+    iny
+    lda [*.ptr],y
     sta famistudio_chn_vrc7_patch-FAMISTUDIO_VRC7_CH0_IDX, x
     bne .famistudio_set_vrc7_instrument_done
 
     .famistudio_set_vrc7_instrument_read_custom_patch:
     ldx #0
-    iny
     iny
     .famistudio_set_vrc7_instrument_read_patch_loop:
         stx FAMISTUDIO_VRC7_REG_SEL
@@ -6706,9 +6719,11 @@ famistudio_sfx_sample_play::
     stx famistudio_dpcm_effect
 
 sample_play:
+    .local .update_flags
     .local .tmp
     .local .sample_index
     .local .sample_data_ptr
+    .update_flags = famistudio_r1
     .tmp = famistudio_r3
     .sample_index = famistudio_r3
     .sample_data_ptr = famistudio_ptr1
@@ -6770,6 +6785,8 @@ sample_play:
 .read_dmc_initial_value:
 .endif
 
+    bit *.update_flags
+    bmi .start_dmc
     lda [*.sample_data_ptr],y ; Initial DMC counter
     sta FAMISTUDIO_APU_DMC_RAW
 

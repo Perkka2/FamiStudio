@@ -15,6 +15,7 @@ namespace FamiStudio
         LocalizedString AdjustClock;
         LocalizedString ReverseDPCMBitsLabel;
         LocalizedString PreserveDPCMPaddingByte;
+        LocalizedString ImportDMCValuesLabel;
         LocalizedString Ym2149AsEPSM;
         LocalizedString TuningLabel;
 
@@ -32,7 +33,8 @@ namespace FamiStudio
             dialog.Properties.AddCheckBox(AdjustClock.Colon, true);                                 // 3
             dialog.Properties.AddCheckBox(ReverseDPCMBitsLabel.Colon, false);                       // 4
             dialog.Properties.AddCheckBox(PreserveDPCMPaddingByte.Colon, false);                    // 5
-            dialog.Properties.AddCheckBox(Ym2149AsEPSM.Colon, false);                               // 6
+            dialog.Properties.AddCheckBox(ImportDMCValuesLabel.Colon, true);                        // 6
+            dialog.Properties.AddCheckBox(Ym2149AsEPSM.Colon, false);                               // 7
             dialog.Properties.Build();
         }
 
@@ -51,9 +53,10 @@ namespace FamiStudio
                         var adjustClock         = dialog.Properties.GetPropertyValue<bool>(3);
                         var reverseDpcmBits     = dialog.Properties.GetPropertyValue<bool>(4);
                         var preserveDpcmPadding = dialog.Properties.GetPropertyValue<bool>(5);
-                        var ym2149AsEpsm        = dialog.Properties.GetPropertyValue<bool>(6);
+                        var importDmcValues     = dialog.Properties.GetPropertyValue<bool>(6);
+                        var ym2149AsEpsm        = dialog.Properties.GetPropertyValue<bool>(7);
 
-                        var project = new VgmFile().Load(filename, patternLen, skipFrames, adjustClock, reverseDpcmBits, preserveDpcmPadding, ym2149AsEpsm, tuning);
+                        var project = new VgmFile().Load(filename, patternLen, skipFrames, adjustClock, reverseDpcmBits, preserveDpcmPadding, importDmcValues, ym2149AsEpsm, tuning);
                         action(project);
                     }
                     else

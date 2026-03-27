@@ -610,23 +610,23 @@ FAMISTUDIO_CH3_ENVS = 8
     FAMISTUDIO_FDS_CH0_ENVS = 32
 .endif
 .if FAMISTUDIO_EXP_MMC5
-    FAMISTUDIO_MMC5_CH0_ENVS = 34
-    FAMISTUDIO_MMC5_CH1_ENVS = 37
+    FAMISTUDIO_MMC5_CH0_ENVS = 35
+    FAMISTUDIO_MMC5_CH1_ENVS = 38
 .endif
 .if FAMISTUDIO_EXP_N163
-    FAMISTUDIO_N163_CH0_ENVS = 40
-    FAMISTUDIO_N163_CH1_ENVS = 43
-    FAMISTUDIO_N163_CH2_ENVS = 46
-    FAMISTUDIO_N163_CH3_ENVS = 49
-    FAMISTUDIO_N163_CH4_ENVS = 52
-    FAMISTUDIO_N163_CH5_ENVS = 55
-    FAMISTUDIO_N163_CH6_ENVS = 58
-    FAMISTUDIO_N163_CH7_ENVS = 61
+    FAMISTUDIO_N163_CH0_ENVS = 41
+    FAMISTUDIO_N163_CH1_ENVS = 44
+    FAMISTUDIO_N163_CH2_ENVS = 47
+    FAMISTUDIO_N163_CH3_ENVS = 50
+    FAMISTUDIO_N163_CH4_ENVS = 53
+    FAMISTUDIO_N163_CH5_ENVS = 56
+    FAMISTUDIO_N163_CH6_ENVS = 59
+    FAMISTUDIO_N163_CH7_ENVS = 62
 .endif
 .if FAMISTUDIO_EXP_S5B
-    FAMISTUDIO_S5B_CH0_ENVS = 63
-    FAMISTUDIO_S5B_CH1_ENVS = 67
-    FAMISTUDIO_S5B_CH2_ENVS = 71
+    FAMISTUDIO_S5B_CH0_ENVS = 64
+    FAMISTUDIO_S5B_CH1_ENVS = 68
+    FAMISTUDIO_S5B_CH2_ENVS = 72
 .endif
 .if FAMISTUDIO_EXP_EPSM
 .if FAMISTUDIO_EXP_EPSM_SSG_CHN_CNT > 0
@@ -644,7 +644,7 @@ EPSM_ENV_CH3_INCREMENT = 4
 .else
 EPSM_ENV_CH3_INCREMENT = 2
 .endif
-    FAMISTUDIO_EPSM_CH0_ENVS = 75
+    FAMISTUDIO_EPSM_CH0_ENVS = 76
     FAMISTUDIO_EPSM_CH1_ENVS =  FAMISTUDIO_EPSM_CH0_ENVS + EPSM_ENV_CH1_INCREMENT
     FAMISTUDIO_EPSM_CH2_ENVS =  FAMISTUDIO_EPSM_CH1_ENVS + EPSM_ENV_CH2_INCREMENT
     FAMISTUDIO_EPSM_CH3_ENVS =  FAMISTUDIO_EPSM_CH2_ENVS + EPSM_ENV_CH3_INCREMENT
@@ -887,6 +887,7 @@ famistudio_vrc6_saw_prev_hi    = famistudio_vrc6_saw_volume
 famistudio_chn_vrc7_prev_hi:      .res 6
 famistudio_chn_vrc7_patch:        .res 6
 famistudio_chn_vrc7_trigger:      .res 6 ; bit 0 = new note triggered, bit 7 = note released.
+famistudio_chn_vrc7_sustain:      .res 1 ; sustain bit overrides release.
 .endif
 .if FAMISTUDIO_EXP_EPSM
 .if FAMISTUDIO_EXP_EPSM_RHYTHM_CNT > 0
@@ -2487,8 +2488,18 @@ famistudio_update_vrc7_channel_sound:
     sta FAMISTUDIO_VRC7_REG_SEL
     jsr famistudio_vrc7_wait_reg_select
 
+    lda famistudio_chn_vrc7_sustain
+    bmi @override_stop
     lda famistudio_chn_vrc7_prev_hi, y
-    and #$cf ; Remove trigger + sustain
+    and #$cf
+    bne @apply_cut
+
+@override_stop:
+    lda famistudio_chn_vrc7_prev_hi, y
+    and #$ef
+    ora #$20 ; Set sustain flag to override
+
+@apply_cut:
     sta famistudio_chn_vrc7_prev_hi, y
     sta FAMISTUDIO_VRC7_REG_WRITE
     jsr famistudio_vrc7_wait_reg_write
@@ -2608,7 +2619,7 @@ famistudio_update_vrc7_channel_sound:
 
     txa
     asl
-    ora #$20
+    ora famistudio_chn_vrc7_sustain
     ora @pitch+1
     ora @tmp
     sta famistudio_chn_vrc7_prev_hi, y
@@ -5115,12 +5126,14 @@ famistudio_set_vrc7_instrument:
     @load_patch:
     ldx @chan_idx
     lda (@ptr),y
+    sta famistudio_chn_vrc7_sustain
+    iny
+    lda (@ptr),y
     sta famistudio_chn_vrc7_patch-FAMISTUDIO_VRC7_CH0_IDX,x
     bne @done
 
     @read_custom_patch:
     ldx #0
-    iny
     iny
     @read_patch_loop:
         stx FAMISTUDIO_VRC7_REG_SEL
@@ -5835,8 +5848,8 @@ famistudio_advance_channel:
             .if FAMISTUDIO_CFG_EQUALIZER 
                 lda #9
                 sta famistudio_chn_note_counter,x
-            .endif            
-            bne @done
+            .endif
+            bne @done			
 .endif
 
 @check_attack:
@@ -6653,6 +6666,7 @@ famistudio_sfx_sample_play:
 
 sample_play:
 
+    @update_flags = famistudio_r1
     @tmp = famistudio_r3
     @sample_index = famistudio_r3
     @sample_data_ptr = famistudio_ptr1
@@ -6714,6 +6728,8 @@ sample_play:
 @read_dmc_initial_value:
 .endif    
 
+    bit @update_flags
+    bmi @start_dmc
     lda (@sample_data_ptr),y ; Initial DMC counter
     sta FAMISTUDIO_APU_DMC_RAW
 
