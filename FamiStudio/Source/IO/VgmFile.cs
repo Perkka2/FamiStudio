@@ -1504,7 +1504,13 @@ namespace FamiStudio
                             // S5B is offset by -1 vs 2A03/2A07 tables.
                             if (channel.IsS5BChannel)
                                 period -= 1;
-                                
+                            
+                            if(period < noteTable[1] && octave != 0)
+                            {
+                                octave--;
+                                period *= 2;
+                            }
+
                             note = (byte)GetBestMatchingNote(period, noteTable, out finePitch);
                         }
 
@@ -1698,8 +1704,68 @@ namespace FamiStudio
             int expansionMask = 0;
             var samplesPerFrame = 735;
 
-            while (vgmDataOffset < vgmFile.Length) {
-                if(expansionMask != project.ExpansionAudioMask)
+            //Looping through file to check if file is PAL
+            while (vgmDataOffset < vgmFile.Length)
+            {
+                if (vgmCommand == 0x67)  //DataBlock
+                {
+                    var dataSize = BitConverter.ToInt32(vgmFile.AsSpan(vgmDataOffset + 3, 4));
+                    vgmDataOffset = vgmDataOffset + dataSize + 7;
+                }
+                else if (vgmCommand == 0x68)
+                    vgmDataOffset = vgmDataOffset + 12;
+                else if (vgmCommand == 0x66)
+                {
+                    vgmDataOffset = vgmDataOffset + 1;
+                    break;
+                }
+
+                else if (vgmCommand == 0x61 || vgmCommand == 0x63 || vgmCommand == 0x62 || (vgmCommand >= 0x70 && vgmCommand <= 0x8f))
+                {
+                    if (vgmCommand == 0x63)
+                    {
+                        vgmDataOffset = vgmDataOffset + 1;
+                        samplesPerFrame = 882;
+                        pal = true;
+                        project.PalMode = pal;
+                        break;
+                    }
+                    else if (vgmCommand == 0x62)
+                        vgmDataOffset = vgmDataOffset + 1;
+                    else if (vgmCommand == 0x61)
+                        vgmDataOffset = vgmDataOffset + 3;
+                    else if (vgmCommand >= 0x80)
+                        vgmDataOffset = vgmDataOffset + 1;
+                    else
+                        vgmDataOffset = vgmDataOffset + 1;
+                }
+                else if (vgmCommand == 0x4F || vgmCommand == 0x50 || vgmCommand == 0x31)
+                    vgmDataOffset = vgmDataOffset + 2;
+                else if (vgmCommand >= 0xC0 && vgmCommand <= 0xDF)
+                    vgmDataOffset = vgmDataOffset + 4;
+                else if (vgmCommand == 0xE0)
+                    vgmDataOffset = vgmDataOffset + 5;
+                else if (vgmCommand >= 0x90 && vgmCommand <= 0x92)
+                    vgmDataOffset = vgmDataOffset + 6;
+                else if (vgmCommand == 0x93)
+                    vgmDataOffset = vgmDataOffset + 11;
+                else if (vgmCommand == 0x94)
+                    vgmDataOffset = vgmDataOffset + 2;
+                else if (vgmCommand == 0x95)
+                    vgmDataOffset = vgmDataOffset + 5;
+                else
+                    vgmDataOffset = vgmDataOffset + 3;
+                if (vgmFile.Length > vgmDataOffset)
+                    vgmCommand = vgmFile[vgmDataOffset];
+                else
+                    break;
+            }
+
+            vgmDataOffset = BitConverter.ToInt32(vgmFile.AsSpan(0x34, 4)) + 0x34;
+            vgmCommand = vgmFile[vgmDataOffset];
+            while (vgmDataOffset < vgmFile.Length)
+            {
+                if (expansionMask != project.ExpansionAudioMask)
                     project.SetExpansionAudioMask(expansionMask, 0);
 
                 if (vgmCommand == 0x67)  //DataBlock
@@ -1781,10 +1847,7 @@ namespace FamiStudio
                     if (vgmCommand == 0x63)
                     {
                         vgmDataOffset = vgmDataOffset + 1;
-                        samplesPerFrame = 882;
                         samples = samples + samplesPerFrame;
-                        pal = true;
-                        project.PalMode = pal;
                     }
                     else if (vgmCommand == 0x62)
                     {
@@ -1892,7 +1955,7 @@ namespace FamiStudio
                         {
                             int channel = vgmData[1] - 0x20;
                             if (((vgmData[2] & 0x10) > 0) && ((vrc7Register[vgmData[1]] & 0x10) != (vgmData[2] & 0x10)))
-                                if(channel < 6)
+                                if (channel < 6)
                                     vrc7Trigger[channel] = 1;
                         }
                         vrc7Register[vgmData[1]] = vgmData[2];
@@ -1981,6 +2044,8 @@ namespace FamiStudio
                             epsmRegisterLo[vgmData[1]] = vgmData[2] & 0x3f;
                         else if (vgmData[1] >= 0xB4 && vgmData[1] <= 0xB6)
                             epsmRegisterLo[vgmData[1]] = vgmData[2] & 0xf7;
+                        else if (vgmData[1] >= 0xA4 && vgmData[1] <= 0xA6)
+                            epsmRegisterLo[vgmData[1]] = vgmData[2] & 0x3f;
                         else
                             epsmRegisterLo[vgmData[1]] = vgmData[2];
                         expansionMask = expansionMask | ExpansionType.EPSMMask;
@@ -2001,6 +2066,8 @@ namespace FamiStudio
                             epsmRegisterHi[vgmData[1]] = vgmData[2] & 0x3f;
                         else if (vgmData[1] >= 0xB4 && vgmData[1] <= 0xB6)
                             epsmRegisterHi[vgmData[1]] = vgmData[2] & 0xf7;
+                        else if (vgmData[1] >= 0xA4 && vgmData[1] <= 0xA6)
+                            epsmRegisterHi[vgmData[1]] = vgmData[2] & 0x3f;
                         else
                             epsmRegisterHi[vgmData[1]] = vgmData[2];
                         expansionMask = expansionMask | ExpansionType.EPSMMask;
@@ -2032,7 +2099,7 @@ namespace FamiStudio
                     }
                     else
                     {
-                        if(unknownChipCommands < 100)
+                        if (unknownChipCommands < 100)
                             Log.LogMessage(LogSeverity.Info, "Unknown VGM Chip Data: " + BitConverter.ToString(vgmData.ToArray()).Replace("-", "") + " offset: " + vgmDataOffset + " command " + vgmCommand);
                         unknownChipCommands++;
                     }
@@ -2044,7 +2111,7 @@ namespace FamiStudio
                 else
                     break;
             }
-            if(pal)
+            if (pal)
                 Log.LogMessage(LogSeverity.Info, "VGM is PAL");
             else
                 Log.LogMessage(LogSeverity.Info, "VGM is NTSC");
