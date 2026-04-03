@@ -132,7 +132,7 @@ namespace FamiStudio
             }
             while ((grooveLength % notesPerBeat) != 0);
 
-            float numer = pal ? 3000.0f : 3600.0f;
+            float numer = (pal ? NesApu.FpsPAL : NesApu.FpsNTSC) * 60;
             float denom = grooveNumFrames / (float)grooveLength * notesPerBeat;
 
             return numer / denom;
