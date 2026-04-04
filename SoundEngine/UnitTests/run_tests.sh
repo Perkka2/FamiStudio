@@ -188,10 +188,13 @@ compile_rom_permutation() {
 while (( count < 1000 )); do
   ((count+=1))
   if ! compile_rom_permutation; then
+    echo
     echo "Error! ROMs are NOT identical with these definitions!"
+    echo
     cat test_defs.inc
     exit 1
   fi
 done
 
+echo
 echo "All ROMs are identical!"
