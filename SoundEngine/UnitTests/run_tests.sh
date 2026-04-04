@@ -163,9 +163,9 @@ compile_rom_permutation() {
 
   cmd='..\..\Tools\ca65.exe test_ca65.s -g -o test_ca65.o && '
   cmd+='..\..\Tools\ld65.exe -C test_ca65.cfg -o test_ca65.nes test_ca65.o --mapfile test_ca65.map --dbgfile test_ca65.dbg && '
-  cmd+='cd .. && '
+  cmd+='pushd .. && '
   cmd+='..\Tools\asm6_fixed.exe UnitTests\test_asm6.asm UnitTests\test_asm6.nes && '
-  cmd+='cd UnitTests && '
+  cmd+='popd && '
   cmd+='..\..\Tools\NESASM3.exe test_nesasm.asm && '
   cmd+='..\..\Tools\sdas6500.exe -pogn -I. -I.. -y -s -l test_sdas.o test_sdas.s && '
   cmd+='..\..\Tools\sdld6808.exe -n -i -j -y -w -u -w -b _ZP=0x0000 -b _BSS=0x300 -b _CODE=0x8000 test_sdas.ihx test_sdas.o && '
