@@ -98,7 +98,7 @@ namespace FamiStudio
 
                 Debug.Assert(!sample.HasAnyProcessingOptions);
 
-                lines.Add($"\tDPCMSample{GenerateAttribute("Name", sample.Name)}{ConditionalGenerateAttribute("Color", sample.Color.ToHexString(), !noColors)}{GenerateAttributeIfNonEmpty("Folder", sample.FolderName)}{GenerateAttribute("DmcInitialValue", sample.DmcInitialValueDiv2)}{GenerateAttribute("Data", String.Join("", sample.ProcessedData.Select(x => $"{x:x2}")))}");
+                lines.Add($"\tDPCMSample{GenerateAttribute("Name", sample.Name)}{ConditionalGenerateAttribute("Color", sample.Color.ToHexString(), !noColors)}{GenerateAttributeIfNonEmpty("Folder", sample.FolderName)}{ConditionalGenerateAttribute("DmcInitialValue", sample.DmcInitialValueDiv2, sample.DmcInitialValueDiv2 != 32)}{GenerateAttribute("Data", String.Join("", sample.ProcessedData.Select(x => $"{x:x2}")))}");
             }
 
             // Instruments
