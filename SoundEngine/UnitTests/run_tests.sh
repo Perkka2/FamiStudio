@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+export NES_INCLUDE=..
 export WINEDEBUG=-all
 
 count=0
@@ -171,7 +173,7 @@ compile_rom_permutation() {
   cmd+='..\..\Tools\sdld6808.exe -n -i -j -y -w -u -w -b _ZP=0x0000 -b _BSS=0x300 -b _CODE=0x8000 test_sdas.ihx test_sdas.o && '
   cmd+='..\..\Tools\makebin.exe -s 73728 -o 32752 test_sdas.ihx test_sdas.nes'
 
-  NES_INCLUDE=.. wine cmd /c "$cmd" || return 1 # NES_INCLUDE is needed for NESASM3 to find the notetables.
+  wine cmd /c "$cmd" || return 1 # NES_INCLUDE is needed for NESASM3 to find the notetables.
 
   cmp -s test_ca65.nes test_asm6.nes   || return 1
   cmp -s test_ca65.nes test_nesasm.nes || return 1
